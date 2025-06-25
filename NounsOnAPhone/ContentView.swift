@@ -8,14 +8,24 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var gameState = GameState()
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        Group {
+            switch gameState.currentPhase {
+            case .wordInput:
+                WordInputView(gameState: gameState)
+            case .gameOverview:
+                GameOverviewView(gameState: gameState)
+            case .playing:
+                GamePlayView(gameState: gameState)
+            case .roundTransition:
+                RoundTransitionView(gameState: gameState)
+            case .gameOver:
+                GameOverView(gameState: gameState)
+            }
         }
-        .padding()
+        .animation(.easeInOut(duration: 0.3), value: gameState.currentPhase)
     }
 }
 

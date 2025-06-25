@@ -12,6 +12,8 @@ struct NounsOnAPhoneApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .accentColor(.blue)
+                .preferredColorScheme(.light)
         }
     }
 }
