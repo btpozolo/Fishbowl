@@ -6,58 +6,46 @@ struct GamePlayView: View {
     var body: some View {
         GeometryReader { geometry in
             if geometry.size.width > geometry.size.height {
-                // Horizontal layout: Left (round/timer), Center (word/button), Right (scores)
+                // Horizontal layout: Main column (team/round, word, button) + Side column (timer, scores)
                 HStack(spacing: 24) {
-                    // Left: Round info and timer
-                    VStack(alignment: .leading, spacing: 32) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Team \(gameState.currentTeam)")
+                    // Main column: Team/Round info, Word card, Correct button
+                    VStack(spacing: 32) {
+                        // Top: Team and round info on same line
+                        HStack {
+                            Text("Team ")
+                                .font(.title2)
+                                .foregroundColor(.primary)
+                            
+                            Text("\(gameState.currentTeam)")
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .foregroundColor(.primary)
-                            Text(gameState.currentRound.title)
-                                .font(.subheadline)
+                            
+                            Text(" • Round ")
+                                .font(.title2)
+                                .foregroundColor(.primary)
+                            
+                            Text("\(gameState.currentRound.rawValue)")
+                                .font(.title2)
+                                .foregroundColor(.primary)
+                            
+                            Text(": \(gameState.currentRound.shortDescription)")
+                                .font(.title2)
                                 .foregroundColor(.secondary)
+                            
+                            Spacer()
                         }
-                        // Timer
-                        VStack(spacing: 8) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "timer")
-                                    .font(.title3)
-                                    .foregroundColor(timerColor)
-                                Text(timeString)
-                                    .font(.system(size: 32, weight: .bold, design: .monospaced))
-                                    .foregroundColor(timerColor)
-                                    .monospacedDigit()
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(timerBackgroundColor)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .stroke(timerColor.opacity(0.3), lineWidth: 1)
-                                    )
-                            )
-                            ProgressView(value: Double(gameState.timeRemaining), total: Double(gameState.timerDuration))
-                                .progressViewStyle(LinearProgressViewStyle(tint: timerColor))
-                                .scaleEffect(x: 1, y: 2, anchor: .center)
-                        }
-                        Spacer()
-                    }
-                    .frame(maxWidth: geometry.size.width * 0.22, alignment: .top)
-                    
-                    // Center: Word and button
-                    VStack(spacing: 40) {
+                        .padding(.top, 20)
+                        
+                        // Middle: Word card
                         if let currentWord = gameState.currentWord {
                             Text(currentWord.text)
-                                .font(.system(size: 64, weight: .bold, design: .rounded))
+                                .font(.system(size: 72, weight: .bold, design: .rounded))
                                 .foregroundColor(.primary)
                                 .multilineTextAlignment(.center)
-                                .padding(.horizontal, 32)
-                                .padding(.vertical, 40)
-                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal, 40)
+                                .padding(.vertical, 50)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
                                 .lineLimit(currentWord.text.contains(" ") ? nil : 1)
                                 .truncationMode(.tail)
                                 .minimumScaleFactor(0.3)
@@ -73,6 +61,8 @@ struct GamePlayView: View {
                                 .scaleEffect(1.0)
                                 .animation(.spring(response: 0.6, dampingFraction: 0.8), value: currentWord.text)
                         }
+                        
+                        // Bottom: Correct button
                         Button(action: {
                             withAnimation(.spring(response: 0.4)) {
                                 gameState.wordGuessed()
@@ -80,13 +70,13 @@ struct GamePlayView: View {
                         }) {
                             HStack(spacing: 16) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 36))
+                                    .font(.system(size: 32))
                                 Text("Correct!")
-                                    .font(.system(size: 36, weight: .semibold))
+                                    .font(.system(size: 32, weight: .semibold))
                             }
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 24)
+                            .padding(.vertical, 20)
                             .background(
                                 LinearGradient(
                                     gradient: Gradient(colors: [.green, .green.opacity(0.8)]),
@@ -94,24 +84,55 @@ struct GamePlayView: View {
                                     endPoint: .trailing
                                 )
                             )
-                            .cornerRadius(24)
+                            .cornerRadius(20)
                             .shadow(color: .green.opacity(0.3), radius: 12, x: 0, y: 4)
                         }
                         .scaleEffect(1.0)
                         .animation(.spring(response: 0.3), value: gameState.team1Score + gameState.team2Score)
+                        .padding(.bottom, 20)
                     }
-                    .frame(maxWidth: geometry.size.width * 0.45)
+                    .frame(maxWidth: geometry.size.width * 0.75)
                     
-                    // Right: Scores
-                    VStack(spacing: 32) {
-                        ScoreDisplay(teamNumber: 1, score: gameState.team1Score, isCurrentTeam: gameState.currentTeam == 1)
-                        ScoreDisplay(teamNumber: 2, score: gameState.team2Score, isCurrentTeam: gameState.currentTeam == 2)
+                    // Side column: Timer and scores
+                    VStack(spacing: 24) {
+                        // Timer in upper right
+                        VStack(spacing: 8) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "timer")
+                                    .font(.title3)
+                                    .foregroundColor(timerColor)
+                                Text(timeString)
+                                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                                    .foregroundColor(timerColor)
+                                    .monospacedDigit()
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(timerBackgroundColor)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(timerColor.opacity(0.3), lineWidth: 1)
+                                    )
+                            )
+                            ProgressView(value: Double(gameState.timeRemaining), total: Double(gameState.timerDuration))
+                                .progressViewStyle(LinearProgressViewStyle(tint: timerColor))
+                                .scaleEffect(x: 1, y: 1.5, anchor: .center)
+                        }
+                        .padding(.top, 20)
+                        
+                        // Team scores below timer
+                        VStack(spacing: 16) {
+                            ScoreDisplay(teamNumber: 1, score: gameState.team1Score, isCurrentTeam: gameState.currentTeam == 1)
+                            ScoreDisplay(teamNumber: 2, score: gameState.team2Score, isCurrentTeam: gameState.currentTeam == 2)
+                        }
+                        
                         Spacer()
                     }
-                    .frame(maxWidth: geometry.size.width * 0.22, alignment: .top)
+                    .frame(maxWidth: geometry.size.width * 0.25)
                 }
                 .padding(.horizontal, 20)
-                .padding(.vertical, 20)
             } else {
                 // Vertical layout (original)
                 VStack(spacing: 0) {
@@ -124,7 +145,10 @@ struct GamePlayView: View {
                                     .font(.title2)
                                     .fontWeight(.bold)
                                     .foregroundColor(.primary)
-                                Text(gameState.currentRound.title)
+                                Text("Round \(gameState.currentRound.rawValue)")
+                                    .font(.title3)
+                                    .foregroundColor(.primary)
+                                Text(gameState.currentRound.shortDescription)
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }
@@ -311,6 +335,38 @@ struct ScoreDisplay: View {
     }
 }
 
-#Preview {
-    GamePlayView(gameState: GameState())
-} 
+#Preview("Landscape", traits: .landscapeLeft) {
+    let sampleGameState = GameState()
+    sampleGameState.addWord("Pizza")
+    sampleGameState.addWord("Elephant")
+    sampleGameState.addWord("Basketball")
+    sampleGameState.addWord("Sunshine")
+    sampleGameState.addWord("Mountain")
+    sampleGameState.currentWord = Word(text: "Pizza")
+    sampleGameState.currentPhase = .playing
+    sampleGameState.timeRemaining = 45
+    sampleGameState.timerDuration = 60
+    sampleGameState.team1Score = 3
+    sampleGameState.team2Score = 2
+    sampleGameState.currentTeam = 1
+    
+    return GamePlayView(gameState: sampleGameState)
+}
+
+#Preview() {
+    let sampleGameState = GameState()
+    sampleGameState.addWord("Pizza")
+    sampleGameState.addWord("Elephant")
+    sampleGameState.addWord("Basketball")
+    sampleGameState.addWord("Sunshine")
+    sampleGameState.addWord("Mountain")
+    sampleGameState.currentWord = Word(text: "Pizza")
+    sampleGameState.currentPhase = .playing
+    sampleGameState.timeRemaining = 45
+    sampleGameState.timerDuration = 60
+    sampleGameState.team1Score = 3
+    sampleGameState.team2Score = 2
+    sampleGameState.currentTeam = 1
+    
+    return GamePlayView(gameState: sampleGameState)
+}

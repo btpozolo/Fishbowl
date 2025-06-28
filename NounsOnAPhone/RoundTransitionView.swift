@@ -7,43 +7,20 @@ struct RoundTransitionView: View {
         GeometryReader { geometry in
             if geometry.size.width > geometry.size.height {
                 // Horizontal layout
-                HStack(spacing: 32) {
-                    // Left side - Status and transition info
-                    VStack(spacing: 24) {
-                        // Status icon with animation
-                        ZStack {
-                            Circle()
-                                .fill(statusColor.opacity(0.1))
-                                .frame(width: 80, height: 80)
-                            
-                            Image(systemName: statusIcon)
-                                .font(.system(size: 36))
-                                .foregroundColor(statusColor)
-                        }
-                        .scaleEffect(1.0)
-                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: gameState.timeRemaining)
-                        
-                        VStack(spacing: 12) {
-                            Text(transitionTitle)
-                                .font(.system(size: 32, weight: .bold, design: .rounded))
-                                .foregroundColor(.primary)
-                                .multilineTextAlignment(.center)
-                            
-                            Text(transitionMessage)
-                                .font(.title3)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 20)
-                        }
-                        
-                        Spacer()
+                VStack(spacing: 24) {
+                    // Top: Centered title with round number
+                    VStack(spacing: 12) {
+                        Text(transitionTitleWithRound)
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                            .multilineTextAlignment(.center)
                     }
-                    .frame(maxWidth: geometry.size.width * 0.5)
+                    .padding(.top, 20)
                     
-                    // Right side - Next team info and continue button
-                    VStack(spacing: 24) {
-                        // Next team info with enhanced design
-                        VStack(spacing: 24) {
+                    // Middle: Team info and time remaining in vertical stack
+                    VStack(spacing: 20) {
+                        // Team info
+                        VStack(spacing: 16) {
                             Text(nextTeamTitle)
                                 .font(.headline)
                                 .foregroundColor(.secondary)
@@ -54,77 +31,70 @@ struct RoundTransitionView: View {
                                         .fill(Color(.systemGray6))
                                 )
                             
-                            // Team number without circle
+                            // Team number
                             Text("Team \(nextTeamNumber)")
-                                .font(.system(size: 48, weight: .bold, design: .rounded))
+                                .font(.system(size: 42, weight: .bold, design: .rounded))
                                 .foregroundColor(.accentColor)
                                 .scaleEffect(1.0)
                                 .animation(.spring(response: 0.6, dampingFraction: 0.8), value: nextTeamNumber)
-                            
-                            // Time remaining info (if applicable)
-                            if gameState.timeRemaining > 0 {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "clock")
-                                        .font(.title3)
-                                        .foregroundColor(.orange)
-                                    
-                                    Text("Time remaining: \(formatTime(gameState.timeRemaining))")
-                                        .font(.headline)
-                                        .foregroundColor(.orange)
-                                }
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.orange.opacity(0.1))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .stroke(Color.orange.opacity(0.2), lineWidth: 1)
-                                        )
-                                )
-                            }
-                            
-                            Text(nextTeamMessage)
-                                .font(.headline)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 20)
                         }
                         
-                        Spacer()
-                        
-                        // Continue button with enhanced design
-                        Button(action: {
-                            withAnimation(.spring(response: 0.6)) {
-                                gameState.nextTeam()
+                        // Time remaining (if applicable)
+                        if gameState.timeRemaining > 0 {
+                            HStack(spacing: 8) {
+                                Image(systemName: "clock")
+                                    .font(.title3)
+                                    .foregroundColor(.orange)
+                                
+                                Text("Time remaining: \(formatTime(gameState.timeRemaining))")
+                                    .font(.headline)
+                                    .foregroundColor(.orange)
                             }
-                        }) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "arrow.right.circle.fill")
-                                    .font(.title2)
-                                Text(continueButtonText)
-                                    .font(.title2)
-                                    .fontWeight(.semibold)
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
                             .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [.accentColor, .accentColor.opacity(0.8)]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.orange.opacity(0.1))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                                    )
                             )
-                            .cornerRadius(16)
-                            .shadow(color: .accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
                         }
-                        .padding(.bottom, 20)
                     }
-                    .frame(maxWidth: geometry.size.width * 0.5)
+                    
+                    Spacer()
+                    
+                    // Bottom: Continue button
+                    Button(action: {
+                        withAnimation(.spring(response: 0.6)) {
+                            gameState.nextTeam()
+                        }
+                    }) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "arrow.right.circle.fill")
+                                .font(.title2)
+                            Text(continueButtonText)
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [.accentColor, .accentColor.opacity(0.8)]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(16)
+                        .shadow(color: .accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
                 }
                 .padding(.horizontal, 20)
-                .padding(.vertical, 20)
             } else {
                 // Vertical layout (original)
                 VStack(spacing: 40) {
@@ -314,8 +284,21 @@ struct RoundTransitionView: View {
         let remainingSeconds = seconds % 60
         return String(format: "%d:%02d", minutes, remainingSeconds)
     }
+    
+    private var transitionTitleWithRound: String {
+        if gameState.timeRemaining == 0 {
+            return "Round \(gameState.currentRound) Complete!"
+        } else {
+            return "Round \(gameState.currentRound) Complete!"
+        }
+    }
 }
 
 #Preview {
     RoundTransitionView(gameState: GameState())
 } 
+
+#Preview("Landscape", traits: .landscapeLeft) {
+    RoundTransitionView(gameState: GameState())
+}
+

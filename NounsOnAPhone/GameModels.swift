@@ -49,6 +49,17 @@ enum RoundType: Int, CaseIterable {
             return "Describe the word using only one word"
         }
     }
+    
+    var shortDescription: String {
+        switch self {
+        case .describe:
+            return "Describe"
+        case .actOut:
+            return "Act Out"
+        case .oneWord:
+            return "One Word"
+        }
+    }
 }
 
 class GameState: ObservableObject {
