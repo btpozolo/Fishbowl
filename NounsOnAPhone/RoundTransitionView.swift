@@ -76,30 +76,14 @@ struct RoundTransitionView: View {
                     Spacer()
                     
                     // Bottom: Continue button
-                    Button(action: {
+                    GameButton.primary(
+                        title: continueButtonText,
+                        icon: "arrow.right.circle.fill",
+                        size: .large
+                    ) {
                         withAnimation(.spring(response: 0.6)) {
                             gameState.advanceTeamOrRound()
                         }
-                    }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "arrow.right.circle.fill")
-                                .font(.title2)
-                            Text(continueButtonText)
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [.accentColor, .accentColor.opacity(0.8)]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(16)
-                        .shadow(color: .accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
@@ -192,30 +176,14 @@ struct RoundTransitionView: View {
                     Spacer()
                     
                     // Continue button with enhanced design
-                    Button(action: {
+                    GameButton.primary(
+                        title: continueButtonText,
+                        icon: "arrow.right.circle.fill",
+                        size: .large
+                    ) {
                         withAnimation(.spring(response: 0.6)) {
                             gameState.advanceTeamOrRound()
                         }
-                    }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "arrow.right.circle.fill")
-                                .font(.title2)
-                            Text(continueButtonText)
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [.accentColor, .accentColor.opacity(0.8)]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(16)
-                        .shadow(color: .accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 40)
@@ -267,7 +235,7 @@ struct RoundTransitionView: View {
     
     private var continueButtonText: String {
         if gameState.lastTransitionReason == .timerExpired {
-            return "Continue to Next Team"
+            return "Pass Phone to Next Team"
         } else {
             return "Continue to Next Round"
         }
@@ -303,4 +271,16 @@ struct RoundTransitionView: View {
 #Preview("Landscape", traits: .landscapeLeft) {
     RoundTransitionView(gameState: GameState())
 }
+
+#Preview("Team 1 Ran Out of Time - Switch to Team 2, Round 1") {
+    let sampleGameState = GameState()
+    sampleGameState.addSampleWords()
+    sampleGameState.currentPhase = .roundTransition
+    sampleGameState.currentRound = .describe
+    sampleGameState.currentTeam = 2 // Team 2's turn next
+    sampleGameState.lastTransitionReason = .timerExpired
+    sampleGameState.timeRemaining = 60 // Full timer for new team
+    return RoundTransitionView(gameState: sampleGameState)
+}
+
 

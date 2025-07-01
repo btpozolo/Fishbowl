@@ -221,32 +221,15 @@ struct GamePlayView: View {
                     }
                     Spacer()
                     // Correct button with enhanced design
-                    Button(action: {
+                    GameButton.success(
+                        title: "Correct!",
+                        icon: "checkmark.circle.fill",
+                        size: .large
+                    ) {
                         withAnimation(.spring(response: 0.4)) {
                             gameState.wordGuessed()
                         }
-                    }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.title2)
-                            Text("Correct!")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [.green, .green.opacity(0.8)]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(16)
-                        .shadow(color: .green.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
-                    .scaleEffect(1.0)
                     .animation(.spring(response: 0.3), value: gameState.team1Score + gameState.team2Score)
                     .padding(.horizontal, 20)
                     .padding(.bottom, 32)

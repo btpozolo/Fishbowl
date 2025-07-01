@@ -42,30 +42,14 @@ struct GameOverView: View {
                         Spacer()
                         
                         // Play again button with enhanced design
-                        Button(action: {
+                        GameButton.success(
+                            title: "Play Again",
+                            icon: "arrow.clockwise.circle.fill",
+                            size: .large
+                        ) {
                             withAnimation(.spring(response: 0.6)) {
                                 gameState.resetGame()
                             }
-                        }) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "arrow.clockwise.circle.fill")
-                                    .font(.title2)
-                                Text("Play Again")
-                                    .font(.title2)
-                                    .fontWeight(.semibold)
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [.green, .green.opacity(0.8)]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(16)
-                            .shadow(color: .green.opacity(0.3), radius: 8, x: 0, y: 4)
                         }
                         .padding(.bottom, 20)
                     }
@@ -165,30 +149,14 @@ struct GameOverView: View {
                     Spacer()
                     
                     // Play again button with enhanced design and consistent bottom padding
-                    Button(action: {
+                    GameButton.success(
+                        title: "Play Again",
+                        icon: "arrow.clockwise.circle.fill",
+                        size: .large
+                    ) {
                         withAnimation(.spring(response: 0.6)) {
                             gameState.resetGame()
                         }
-                    }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "arrow.clockwise.circle.fill")
-                                .font(.title2)
-                            Text("Play Again")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [.green, .green.opacity(0.8)]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(16)
-                        .shadow(color: .green.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 40) // Consistent bottom padding for all cases

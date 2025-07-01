@@ -138,31 +138,14 @@ struct WordInputView: View {
                                 
                                 // Sample words button with improved styling
                                 if gameState.words.isEmpty {
-                                    Button(action: {
+                                    GameButton.primary(
+                                        title: "Add Sample Words",
+                                        icon: "wand.and.stars"
+                                    ) {
                                         withAnimation(.spring(response: 0.6)) {
                                             gameState.addSampleWords()
                                         }
-                                    }) {
-                                        HStack(spacing: 8) {
-                                            Image(systemName: "wand.and.stars")
-                                                .font(.title3)
-                                            Text("Add Sample Words")
-                                                .font(.headline)
-                                        }
-                                        .foregroundColor(.white)
-                                        .padding(.vertical, 12)
-                                        .padding(.horizontal, 20)
-                                        .background(
-                                            LinearGradient(
-                                                gradient: Gradient(colors: [.accentColor, .accentColor.opacity(0.8)]),
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                        )
-                                        .cornerRadius(12)
-                                        .shadow(color: .accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
                                     }
-                                    .scaleEffect(1.0)
                                     .animation(.spring(response: 0.3), value: gameState.words.count)
                                 }
                             }
@@ -173,37 +156,29 @@ struct WordInputView: View {
                     }
                     
                     // Centered start game button
-                    Button(action: {
-                        withAnimation(.spring(response: 0.6)) {
-                            gameState.startGame()
+                    if gameState.canStartGame() {
+                        GameButton.success(
+                            title: "Start Game",
+                            icon: "play.circle.fill",
+                            size: .large
+                        ) {
+                            withAnimation(.spring(response: 0.6)) {
+                                gameState.startGame()
+                            }
                         }
-                    }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "play.circle.fill")
-                                .font(.title2)
-                            Text("Start Game")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                        }
-                        .foregroundColor(.white)
                         .frame(maxWidth: geometry.size.width * 0.6)
-                        .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: gameState.canStartGame() ? 
-                                    [.green, .green.opacity(0.8)] : 
-                                    [.gray, .gray.opacity(0.8)]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(16)
-                        .shadow(color: gameState.canStartGame() ? .green.opacity(0.3) : .gray.opacity(0.3), radius: 8, x: 0, y: 4)
+                        .padding(.bottom, 20)
+                    } else {
+                        GameButton.disabled(
+                            title: "Start Game",
+                            icon: "play.circle.fill",
+                            size: .large
+                        ) {
+                            // No action when disabled
+                        }
+                        .frame(maxWidth: geometry.size.width * 0.6)
+                        .padding(.bottom, 20)
                     }
-                    .disabled(!gameState.canStartGame())
-                    .scaleEffect(gameState.canStartGame() ? 1.0 : 0.98)
-                    .animation(.spring(response: 0.3), value: gameState.canStartGame())
-                    .padding(.bottom, 20)
                 }
                 .padding(.horizontal, 20)
             } else {
@@ -334,67 +309,37 @@ struct WordInputView: View {
                                 
                                 // Start game button (only show when keyboard is visible)
                                 if keyboardHeight > 0 {
-                                    Button(action: {
-                                        withAnimation(.spring(response: 0.6)) {
-                                            gameState.startGame()
+                                    if gameState.canStartGame() {
+                                        GameButton.success(
+                                            title: "Start",
+                                            icon: "play.circle.fill"
+                                        ) {
+                                            withAnimation(.spring(response: 0.6)) {
+                                                gameState.startGame()
+                                            }
                                         }
-                                    }) {
-                                        HStack(spacing: 8) {
-                                            Image(systemName: "play.circle.fill")
-                                                .font(.title3)
-                                            Text("Start")
-                                                .font(.headline)
-                                                .fontWeight(.semibold)
+                                    } else {
+                                        GameButton.disabled(
+                                            title: "Start",
+                                            icon: "play.circle.fill"
+                                        ) {
+                                            // No action when disabled
                                         }
-                                        .foregroundColor(.white)
-                                        .padding(.vertical, 12)
-                                        .padding(.horizontal, 16)
-                                        .background(
-                                            LinearGradient(
-                                                gradient: Gradient(colors: gameState.canStartGame() ? 
-                                                    [.green, .green.opacity(0.8)] : 
-                                                    [.gray, .gray.opacity(0.8)]),
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                        )
-                                        .cornerRadius(12)
-                                        .shadow(color: gameState.canStartGame() ? .green.opacity(0.3) : .gray.opacity(0.3), radius: 4, x: 0, y: 2)
                                     }
-                                    .disabled(!gameState.canStartGame())
-                                    .scaleEffect(gameState.canStartGame() ? 1.0 : 0.98)
-                                    .animation(.spring(response: 0.3), value: gameState.canStartGame())
                                 }
                             }
                         }
                         
                         // Sample words button with improved styling
                         if gameState.words.isEmpty {
-                            Button(action: {
+                            GameButton.primary(
+                                title: "Add Sample Words",
+                                icon: "wand.and.stars"
+                            ) {
                                 withAnimation(.spring(response: 0.6)) {
                                     gameState.addSampleWords()
                                 }
-                            }) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "wand.and.stars")
-                                        .font(.title3)
-                                    Text("Add Sample Words")
-                                        .font(.headline)
-                                }
-                                .foregroundColor(.white)
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 20)
-                                .background(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [.accentColor, .accentColor.opacity(0.8)]),
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .cornerRadius(12)
-                                .shadow(color: .accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
                             }
-                            .scaleEffect(1.0)
                             .animation(.spring(response: 0.3), value: gameState.words.count)
                         }
                     }
@@ -403,37 +348,27 @@ struct WordInputView: View {
                     
                     // Start game button with enhanced design (only show when keyboard is not visible)
                     if keyboardHeight == 0 {
-                        Button(action: {
-                            withAnimation(.spring(response: 0.6)) {
-                                gameState.startGame()
+                        if gameState.canStartGame() {
+                            GameButton.success(
+                                title: "Start Game",
+                                icon: "play.circle.fill",
+                                size: .large
+                            ) {
+                                withAnimation(.spring(response: 0.6)) {
+                                    gameState.startGame()
+                                }
                             }
-                        }) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "play.circle.fill")
-                                    .font(.title2)
-                                Text("Start Game")
-                                    .font(.title2)
-                                    .fontWeight(.semibold)
+                            .padding(.bottom, 20)
+                        } else {
+                            GameButton.disabled(
+                                title: "Start Game",
+                                icon: "play.circle.fill",
+                                size: .large
+                            ) {
+                                // No action when disabled
                             }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: gameState.canStartGame() ? 
-                                        [.green, .green.opacity(0.8)] : 
-                                        [.gray, .gray.opacity(0.8)]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(16)
-                            .shadow(color: gameState.canStartGame() ? .green.opacity(0.3) : .gray.opacity(0.3), radius: 8, x: 0, y: 4)
+                            .padding(.bottom, 20)
                         }
-                        .disabled(!gameState.canStartGame())
-                        .scaleEffect(gameState.canStartGame() ? 1.0 : 0.98)
-                        .animation(.spring(response: 0.3), value: gameState.canStartGame())
-                        .padding(.bottom, 20)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -485,7 +420,7 @@ struct CustomTextFieldStyle: TextFieldStyle {
 
 #Preview {
     WordInputView(gameState: GameState())
-} 
+}
 
 #Preview("Landscape", traits: .landscapeLeft) {
     let sampleGameState = GameState()

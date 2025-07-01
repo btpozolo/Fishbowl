@@ -54,30 +54,14 @@ struct GameOverviewView: View {
                     Spacer()
                     
                     // Ready to begin button with enhanced design
-                    Button(action: {
+                    GameButton.success(
+                        title: "Ready to Begin!",
+                        icon: "play.circle.fill",
+                        size: .large
+                    ) {
                         withAnimation(.spring(response: 0.6)) {
                             gameState.beginRound()
                         }
-                    }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "play.circle.fill")
-                                .font(.title2)
-                            Text("Ready to Begin!")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [.green, .green.opacity(0.8)]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(16)
-                        .shadow(color: .green.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                     .padding(.bottom, 20)
                 }
@@ -130,30 +114,14 @@ struct GameOverviewView: View {
                     Spacer()
                     
                     // Ready to begin button with enhanced design
-                    Button(action: {
+                    GameButton.success(
+                        title: "Ready to Begin!",
+                        icon: "play.circle.fill",
+                        size: .large
+                    ) {
                         withAnimation(.spring(response: 0.6)) {
                             gameState.beginRound()
                         }
-                    }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "play.circle.fill")
-                                .font(.title2)
-                            Text("Ready to Begin!")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [.green, .green.opacity(0.8)]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(16)
-                        .shadow(color: .green.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                     .padding(.bottom, 20)
                 }
