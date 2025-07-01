@@ -185,7 +185,7 @@ struct GamePlayView: View {
                     Spacer()
                     // Current word display with enhanced design
                     if let currentWord = gameState.currentWord {
-                        VStack(spacing: 24) {
+                        VStack(spacing: 8) {
                             Text("Current Word")
                                 .font(.headline)
                                 .foregroundColor(.secondary)

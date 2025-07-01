@@ -4,6 +4,7 @@ struct WordInputView: View {
     @ObservedObject var gameState: GameState
     @State private var newWord: String = ""
     @FocusState private var isTextFieldFocused: Bool
+    @State private var keyboardHeight: CGFloat = 0
     
     var body: some View {
         GeometryReader { geometry in
@@ -300,34 +301,71 @@ struct WordInputView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        // Word count display
+                        // Word count display and start game button (when keyboard is visible)
                         if gameState.words.count > 0 {
-                            HStack {
-                                Text("Words added:")
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
+                            HStack(spacing: 12) {
+                                // Word count card
+                                HStack {
+                                    Text("Words added:")
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    
+                                    Spacer()
+                                    
+                                    Text("\(gameState.words.count)")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.accentColor)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color.accentColor.opacity(0.15))
+                                        .cornerRadius(8)
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(.systemBackground))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color.accentColor.opacity(0.2), lineWidth: 1)
+                                        )
+                                )
                                 
-                                Spacer()
-                                
-                                Text("\(gameState.words.count)")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.accentColor)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color.accentColor.opacity(0.15))
-                                    .cornerRadius(8)
+                                // Start game button (only show when keyboard is visible)
+                                if keyboardHeight > 0 {
+                                    Button(action: {
+                                        withAnimation(.spring(response: 0.6)) {
+                                            gameState.startGame()
+                                        }
+                                    }) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "play.circle.fill")
+                                                .font(.title3)
+                                            Text("Start")
+                                                .font(.headline)
+                                                .fontWeight(.semibold)
+                                        }
+                                        .foregroundColor(.white)
+                                        .padding(.vertical, 12)
+                                        .padding(.horizontal, 16)
+                                        .background(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: gameState.canStartGame() ? 
+                                                    [.green, .green.opacity(0.8)] : 
+                                                    [.gray, .gray.opacity(0.8)]),
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                        )
+                                        .cornerRadius(12)
+                                        .shadow(color: gameState.canStartGame() ? .green.opacity(0.3) : .gray.opacity(0.3), radius: 4, x: 0, y: 2)
+                                    }
+                                    .disabled(!gameState.canStartGame())
+                                    .scaleEffect(gameState.canStartGame() ? 1.0 : 0.98)
+                                    .animation(.spring(response: 0.3), value: gameState.canStartGame())
+                                }
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color(.systemBackground))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.accentColor.opacity(0.2), lineWidth: 1)
-                                    )
-                            )
                         }
                         
                         // Sample words button with improved styling
@@ -363,38 +401,40 @@ struct WordInputView: View {
                     
                     Spacer()
                     
-                    // Start game button with enhanced design
-                    Button(action: {
-                        withAnimation(.spring(response: 0.6)) {
-                            gameState.startGame()
-                        }
-                    }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "play.circle.fill")
-                                .font(.title2)
-                            Text("Start Game")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: gameState.canStartGame() ? 
-                                    [.green, .green.opacity(0.8)] : 
-                                    [.gray, .gray.opacity(0.8)]),
-                                startPoint: .leading,
-                                endPoint: .trailing
+                    // Start game button with enhanced design (only show when keyboard is not visible)
+                    if keyboardHeight == 0 {
+                        Button(action: {
+                            withAnimation(.spring(response: 0.6)) {
+                                gameState.startGame()
+                            }
+                        }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "play.circle.fill")
+                                    .font(.title2)
+                                Text("Start Game")
+                                    .font(.title2)
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: gameState.canStartGame() ? 
+                                        [.green, .green.opacity(0.8)] : 
+                                        [.gray, .gray.opacity(0.8)]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
                             )
-                        )
-                        .cornerRadius(16)
-                        .shadow(color: gameState.canStartGame() ? .green.opacity(0.3) : .gray.opacity(0.3), radius: 8, x: 0, y: 4)
+                            .cornerRadius(16)
+                            .shadow(color: gameState.canStartGame() ? .green.opacity(0.3) : .gray.opacity(0.3), radius: 8, x: 0, y: 4)
+                        }
+                        .disabled(!gameState.canStartGame())
+                        .scaleEffect(gameState.canStartGame() ? 1.0 : 0.98)
+                        .animation(.spring(response: 0.3), value: gameState.canStartGame())
+                        .padding(.bottom, 20)
                     }
-                    .disabled(!gameState.canStartGame())
-                    .scaleEffect(gameState.canStartGame() ? 1.0 : 0.98)
-                    .animation(.spring(response: 0.3), value: gameState.canStartGame())
-                    .padding(.bottom, 20)
                 }
                 .padding(.horizontal, 20)
             }
@@ -402,6 +442,14 @@ struct WordInputView: View {
         .background(Color(.systemGroupedBackground))
         .onAppear {
             isTextFieldFocused = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+            if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                keyboardHeight = keyboardFrame.height
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            keyboardHeight = 0
         }
     }
     
@@ -444,4 +492,51 @@ struct CustomTextFieldStyle: TextFieldStyle {
     sampleGameState.addWord("Pizza")
     
     return WordInputView(gameState: sampleGameState)
+}
+
+#Preview("With Keyboard", traits: .portrait) {
+    ZStack {
+        // Main content with reduced height to simulate keyboard space
+        WordInputView(gameState: GameState())
+        
+        // Mock keyboard at the bottom
+        VStack {
+            Spacer()
+            Rectangle()
+                .fill(Color(.systemGray5))
+                .frame(height: 300)
+                .overlay(
+                    VStack(spacing: 8) {
+                        HStack(spacing: 4) {
+                            ForEach(0..<10, id: \.self) { _ in
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color(.systemGray3))
+                                    .frame(width: 30, height: 40)
+                            }
+                        }
+                        HStack(spacing: 4) {
+                            ForEach(0..<9, id: \.self) { _ in
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color(.systemGray3))
+                                    .frame(width: 30, height: 40)
+                            }
+                        }
+                        HStack(spacing: 4) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color(.systemGray3))
+                                .frame(width: 50, height: 40)
+                            ForEach(0..<7, id: \.self) { _ in
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color(.systemGray3))
+                                    .frame(width: 30, height: 40)
+                            }
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color(.systemGray3))
+                                .frame(width: 50, height: 40)
+                        }
+                    }
+                        .padding()
+                )
+        }
+    }
 }

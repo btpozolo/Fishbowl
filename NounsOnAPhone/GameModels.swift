@@ -62,6 +62,11 @@ enum RoundType: Int, CaseIterable {
     }
 }
 
+enum TransitionReason {
+    case timerExpired
+    case wordsExhausted
+}
+
 class GameState: ObservableObject {
     @Published var words: [Word] = []
     @Published var currentPhase: GamePhase = .wordInput
@@ -73,6 +78,7 @@ class GameState: ObservableObject {
     @Published var team2Score: Int = 0
     @Published var currentTeam: Int = 1
     @Published var isTimerRunning: Bool = false
+    @Published var lastTransitionReason: TransitionReason? = nil
     
     private var timer: Timer?
     private var unusedWords: [Word] = []
@@ -88,7 +94,7 @@ class GameState: ObservableObject {
     }
     
     func canStartGame() -> Bool {
-        return words.count >= 3
+        return words.count >= 3 // min words to start game
     }
     
     // MARK: - Game Flow
@@ -99,7 +105,26 @@ class GameState: ObservableObject {
     
     func beginRound() {
         currentPhase = .playing
+        // Reset timer to full duration when starting the first round
+        timeRemaining = timerDuration
         setupRound()
+        startNextTurn()
+    }
+    
+    // Call this from the transition screen's Continue button
+    func beginNextTurn() {
+        currentPhase = .playing
+        startNextTurn()
+    }
+    
+    // Internal: sets up the next word and starts the timer
+    private func startNextTurn() {
+        // Only select a word if there are any left
+        if !unusedWords.isEmpty {
+            getNextWord()
+        } else {
+            self.currentWord = nil
+        }
         startTimer()
     }
     
@@ -115,31 +140,21 @@ class GameState: ObservableObject {
                 !roundUsedWords.contains(word.text)
             }.map { Word(text: $0.text) }
         }
-        
-        getNextWord()
     }
     
     private func getNextWord() {
         if let randomIndex = unusedWords.indices.randomElement() {
-            currentWord = unusedWords[randomIndex]
-            unusedWords.remove(at: randomIndex)
+            self.currentWord = unusedWords[randomIndex]
         } else {
-            // All words used in this round, end round
-            endRound()
+            self.currentWord = nil
         }
     }
     
     // MARK: - Timer Management
     private func startTimer() {
-        // Don't reset timer if we're carrying over time from previous round
-        if timeRemaining == timerDuration {
-            timeRemaining = timerDuration
-        }
         isTimerRunning = true
-        
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            
             if self.timeRemaining > 0 {
                 self.timeRemaining -= 1
             } else {
@@ -156,56 +171,28 @@ class GameState: ObservableObject {
     
     private func timerExpired() {
         stopTimer()
-        currentPhase = .roundTransition
-        
-        // Add current word back to the pool for next team in same round
-        if let currentWord = currentWord {
-            unusedWords.append(currentWord)
-        }
-    }
-    
-    // MARK: - Game Actions
-    func wordGuessed() {
-        guard let currentWord = currentWord else { return }
-        
-        // Increment current team's score
-        if currentTeam == 1 {
-            team1Score += 1
-        } else {
-            team2Score += 1
-        }
-        
-        // Mark word as used in this round
-        roundUsedWords.insert(currentWord.text)
-        
-        // Mark word as used overall
-        if let index = words.firstIndex(where: { $0.text == currentWord.text }) {
-            words[index].used = true
-        }
-        
-        // Get next word or end round
-        if unusedWords.isEmpty {
-            endRound()
-        } else {
-            getNextWord()
-        }
-    }
-    
-    private func endRound() {
-        stopTimer()
-        
-        if currentRound == .oneWord {
-            // Game is over
-            currentPhase = .gameOver
-        } else {
-            // Move to round transition - round advancement will be handled in nextTeam()
+        // If there are still words left, switch teams and continue the round
+        if !unusedWords.isEmpty {
+            currentTeam = currentTeam == 1 ? 2 : 1
+            timeRemaining = timerDuration
             currentPhase = .roundTransition
+            self.currentWord = nil
+            lastTransitionReason = .timerExpired
+        } else {
+            // If no words left, move to next round or end game
+            lastTransitionReason = .wordsExhausted
+            advanceTeamOrRound(wordsExhausted: true)
         }
     }
     
-    func nextTeam() {
-        // If all words have been used in this round, move to next round
-        if currentRound != .oneWord && roundUsedWords.count >= words.count {
+    // Call this when the user presses 'Continue' on the transition screen
+    func advanceTeamOrRound(wordsExhausted: Bool = false) {
+        if wordsExhausted || (currentRound != .oneWord && roundUsedWords.count >= words.count) {
+            // If we're in the last round and words are exhausted, end the game
+            if currentRound == .oneWord {
+                currentPhase = .gameOver
+                return
+            }
             // Advance to next round, same team continues, keep remaining time
             switch currentRound {
             case .describe:
@@ -216,19 +203,56 @@ class GameState: ObservableObject {
                 break // Shouldn't reach here
             }
             roundUsedWords.removeAll()
-            // Do NOT switch teams or reset timer
-        } else {
-            // Still in the same round, switch teams if timer expired
-            if timeRemaining == 0 {
-                currentTeam = currentTeam == 1 ? 2 : 1
-                timeRemaining = timerDuration // Reset timer for new team
-            }
-            // If timeRemaining > 0, keep the same team and their remaining time
+            setupRound()
+            // Do NOT reset timer or switch teams
+        } else if timeRemaining == timerDuration {
+            // This means timer expired and we switched teams
+            // Already handled in timerExpired
+            setupRound()
         }
-
-        currentPhase = .playing
-        setupRound()
-        startTimer()
+        // When user presses Continue, actually start the next turn
+        beginNextTurn()
+    }
+    
+    // MARK: - Game Actions
+    func wordGuessed() {
+        guard let currentWord = currentWord else { return }
+        // Increment current team's score
+        if currentTeam == 1 {
+            team1Score += 1
+        } else {
+            team2Score += 1
+        }
+        // Mark word as used in this round
+        roundUsedWords.insert(currentWord.text)
+        // Mark word as used overall
+        if let index = words.firstIndex(where: { $0.text == currentWord.text }) {
+            words[index].used = true
+        }
+        // Remove the word from the pool ONLY when guessed
+        if let index = unusedWords.firstIndex(where: { $0.text == currentWord.text }) {
+            unusedWords.remove(at: index)
+        }
+        // If there are no more words, end the round or game
+        if unusedWords.isEmpty {
+            stopTimer()
+            if currentRound == .oneWord {
+                currentPhase = .gameOver
+            } else {
+                currentPhase = .roundTransition
+            }
+            // Do not switch teams, do not reset timer
+            self.currentWord = nil
+            lastTransitionReason = .wordsExhausted
+        } else {
+            getNextWord()
+        }
+    }
+    
+    private func endRound() {
+        stopTimer()
+        currentPhase = .roundTransition
+        self.currentWord = nil
     }
     
     // MARK: - Utility
@@ -246,7 +270,7 @@ class GameState: ObservableObject {
         currentPhase = .wordInput
         resetScores()
         stopTimer()
-        currentWord = nil
+        self.currentWord = nil
         unusedWords.removeAll()
     }
     
