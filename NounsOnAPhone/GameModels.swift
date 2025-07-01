@@ -82,7 +82,7 @@ class GameState: ObservableObject {
     
     private var timer: Timer?
     private var unusedWords: [Word] = []
-    private var roundUsedWords: Set<String> = [] // Track used words per round
+    private var roundUsedWordIds: Set<UUID> = [] // Track used word IDs per round
     
     // MARK: - Word Input Phase
     func addWord(_ wordText: String) {
@@ -131,14 +131,14 @@ class GameState: ObservableObject {
     private func setupRound() {
         // For new rounds, reset the unused words to include all words
         // For team switches within the same round, only include words not used in this round
-        if roundUsedWords.isEmpty {
+        if roundUsedWordIds.isEmpty {
             // New round - all words are available
-            unusedWords = words.map { Word(text: $0.text) }
+            unusedWords = words
         } else {
             // Same round, different team - only unused words from this round
             unusedWords = words.filter { word in
-                !roundUsedWords.contains(word.text)
-            }.map { Word(text: $0.text) }
+                !roundUsedWordIds.contains(word.id)
+            }
         }
     }
     
@@ -187,7 +187,7 @@ class GameState: ObservableObject {
     
     // Call this when the user presses 'Continue' on the transition screen
     func advanceTeamOrRound(wordsExhausted: Bool = false) {
-        if wordsExhausted || (currentRound != .oneWord && roundUsedWords.count >= words.count) {
+        if wordsExhausted || (currentRound != .oneWord && roundUsedWordIds.count >= words.count) {
             // If we're in the last round and words are exhausted, end the game
             if currentRound == .oneWord {
                 currentPhase = .gameOver
@@ -202,7 +202,7 @@ class GameState: ObservableObject {
             case .oneWord:
                 break // Shouldn't reach here
             }
-            roundUsedWords.removeAll()
+            roundUsedWordIds.removeAll()
             setupRound()
             // Do NOT reset timer or switch teams
         } else if timeRemaining == timerDuration {
@@ -223,14 +223,14 @@ class GameState: ObservableObject {
         } else {
             team2Score += 1
         }
-        // Mark word as used in this round
-        roundUsedWords.insert(currentWord.text)
+        // Mark word as used in this round by its unique ID
+        roundUsedWordIds.insert(currentWord.id)
         // Mark word as used overall
-        if let index = words.firstIndex(where: { $0.text == currentWord.text }) {
+        if let index = words.firstIndex(where: { $0.id == currentWord.id }) {
             words[index].used = true
         }
         // Remove the word from the pool ONLY when guessed
-        if let index = unusedWords.firstIndex(where: { $0.text == currentWord.text }) {
+        if let index = unusedWords.firstIndex(where: { $0.id == currentWord.id }) {
             unusedWords.remove(at: index)
         }
         // If there are no more words, end the round or game
@@ -262,7 +262,7 @@ class GameState: ObservableObject {
         currentTeam = 1
         currentRound = .describe
         timeRemaining = timerDuration
-        roundUsedWords.removeAll()
+        roundUsedWordIds.removeAll()
     }
     
     func resetGame() {
