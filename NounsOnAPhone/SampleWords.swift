@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Sample Words for Testing
 extension GameState {
-    func addSampleWords() {
+    func addSampleWords(count: Int = 10) {
         let allSampleWords = [
             "accordion", "alien", "avalanche", "bacon", "ballerina", "banjo", "barnacle", "beard", "beehive", "bicycle",
             "bingo", "blender", "blobfish", "boomerang", "broomstick", "bubble", "bulldozer", "burrito", "cactus", "cannonball",
@@ -23,11 +23,11 @@ extension GameState {
             "turtle", "unicorn", "vacuum", "vampire", "volcano", "waffle", "wagon", "walrus", "werewolf", "whale",
             "wig", "windmill", "wizard", "xylophone", "yeti", "yo-yo", "zebra", "zeppelin", "zombie"
         ]
-        
-        let shuffledWords = allSampleWords.shuffled()
-        let selectedWords = Array(shuffledWords.prefix(30))
-        
-        for word in selectedWords {
+        let existing = Set(words.map { $0.text.lowercased() })
+        let available = allSampleWords.filter { !existing.contains($0.lowercased()) }
+        let shuffled = available.shuffled()
+        let selected = Array(shuffled.prefix(count))
+        for word in selected {
             addWord(word)
         }
     }
