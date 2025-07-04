@@ -16,6 +16,7 @@ struct Word: Identifiable, Hashable {
 }
 
 enum GamePhase {
+    case setup
     case wordInput
     case gameOverview
     case playing
@@ -69,7 +70,7 @@ enum TransitionReason {
 
 class GameState: ObservableObject {
     @Published var words: [Word] = []
-    @Published var currentPhase: GamePhase = .wordInput
+    @Published var currentPhase: GamePhase = .setup
     @Published var currentRound: RoundType = .describe
     @Published var currentWord: Word?
     @Published var timeRemaining: Int = 60
@@ -83,6 +84,11 @@ class GameState: ObservableObject {
     private var timer: Timer?
     private var unusedWords: [Word] = []
     private var roundUsedWordIds: Set<UUID> = [] // Track used word IDs per round
+    
+    // MARK: - Setup Phase
+    func proceedToWordInput() {
+        currentPhase = .wordInput
+    }
     
     // MARK: - Word Input Phase
     func addWord(_ wordText: String) {
@@ -267,7 +273,7 @@ class GameState: ObservableObject {
     
     func resetGame() {
         words.removeAll()
-        currentPhase = .wordInput
+        currentPhase = .setup
         resetScores()
         stopTimer()
         self.currentWord = nil

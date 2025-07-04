@@ -13,6 +13,8 @@ struct ContentView: View {
     var body: some View {
         Group {
             switch gameState.currentPhase {
+            case .setup:
+                SetupView(gameState: gameState)
             case .wordInput:
                 WordInputView(gameState: gameState)
             case .gameOverview:

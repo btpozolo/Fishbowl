@@ -7,74 +7,58 @@ struct RoundTransitionView: View {
         GeometryReader { geometry in
             if geometry.size.width > geometry.size.height {
                 // Horizontal layout
-                VStack(spacing: 24) {
+                VStack(spacing: 8) {
                     // Top: Centered title with round number
-                    VStack(spacing: 12) {
+                    VStack(spacing: 8) {
                         Text(transitionTitle)
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
-                        Text(transitionMessage)
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 20)
+                            .padding(.top, 40)
                     }
-                    .padding(.top, 20)
-                    
-                    // Middle: Team info and time remaining in vertical stack
-                    VStack(spacing: 20) {
+                    // Center the team info/time block vertically
+                    Spacer()
+                    VStack(spacing: 8) {
                         // Team info
-                        VStack(spacing: 16) {
+                        VStack(spacing: 8) {
                             Text(nextTeamTitle)
                                 .font(.headline)
                                 .foregroundColor(.secondary)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 4)
                                 .background(
                                     Capsule()
                                         .fill(Color(.systemGray6))
                                 )
-                            
-                            // Team number
                             Text("Team \(nextTeamNumber)")
-                                .font(.system(size: 42, weight: .bold, design: .rounded))
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
                                 .foregroundColor(.accentColor)
                                 .scaleEffect(1.0)
                                 .animation(.spring(response: 0.6, dampingFraction: 0.8), value: nextTeamNumber)
                         }
-                        
                         // Time remaining (if applicable)
                         if gameState.lastTransitionReason == .wordsExhausted && gameState.timeRemaining > 0 {
-                            HStack(spacing: 8) {
+                            HStack(spacing: 6) {
                                 Image(systemName: "clock")
                                     .font(.title3)
                                     .foregroundColor(.orange)
-                                
                                 Text("Time remaining: \(formatTime(gameState.timeRemaining))")
                                     .font(.headline)
                                     .foregroundColor(.orange)
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
                             .background(
-                                RoundedRectangle(cornerRadius: 12)
+                                RoundedRectangle(cornerRadius: 10)
                                     .fill(Color.orange.opacity(0.1))
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
+                                        RoundedRectangle(cornerRadius: 10)
                                             .stroke(Color.orange.opacity(0.2), lineWidth: 1)
                                     )
                             )
                         }
-                        Text(nextTeamMessage)
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 20)
                     }
-                    
                     Spacer()
-                    
                     // Bottom: Continue button
                     GameButton.primary(
                         title: continueButtonText,
@@ -85,10 +69,10 @@ struct RoundTransitionView: View {
                             gameState.advanceTeamOrRound()
                         }
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 8)
             } else {
                 // Vertical layout (original)
                 VStack(spacing: 40) {

@@ -6,32 +6,25 @@ struct GameOverviewView: View {
     var body: some View {
         GeometryReader { geometry in
             if geometry.size.width > geometry.size.height {
-                // Horizontal layout
-                VStack(spacing: 24) {
-                    // Header with improved styling
-                    VStack(spacing: 12) {
+                // Horizontal layout - REFACTORED
+                VStack(spacing: 12) {
+                    // Header row: Title left, Timer right
+                    HStack(alignment: .top) {
                         Text("Fishbowl")
                             .font(.system(size: 28, weight: .bold, design: .rounded))
                             .foregroundColor(.primary)
-                            .multilineTextAlignment(.center)
-                        
-                        Text("\(gameState.words.count) words ready to play!")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                        
-                        // Timer duration info with enhanced design
-                        HStack(spacing: 12) {
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+                        HStack(spacing: 8) {
                             Image(systemName: "timer")
                                 .font(.title2)
                                 .foregroundColor(.accentColor)
-                            
                             Text("\(gameState.timerDuration) seconds per team")
                                 .font(.headline)
                                 .foregroundColor(.primary)
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
                                 .fill(Color.accentColor.opacity(0.1))
@@ -42,18 +35,20 @@ struct GameOverviewView: View {
                         )
                     }
                     .padding(.top, 20)
-                    
-                    // Round descriptions in horizontal layout
+                    .padding(.horizontal, 8)
+
+                    // Round descriptions in horizontal layout, more space, no text cut off
                     HStack(spacing: 16) {
                         ForEach(RoundType.allCases, id: \.rawValue) { round in
                             RoundDescriptionCard(round: round)
-                                .frame(maxWidth: .infinity)
+                                .frame(maxWidth: .infinity, minHeight: 140)
                         }
                     }
-                    
-                    Spacer()
-                    
-                    // Ready to begin button with enhanced design
+                    .padding(.horizontal, 0)
+
+                    Spacer(minLength: 8) // Less space between cards and button
+
+                    // Ready to begin button pinned to bottom
                     GameButton.success(
                         title: "Ready to Begin!",
                         icon: "play.circle.fill",
@@ -63,9 +58,10 @@ struct GameOverviewView: View {
                             gameState.beginRound()
                         }
                     }
-                    .padding(.bottom, 20)
+                    .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? geometry.safeAreaInsets.bottom : 20)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 12)
+                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             } else {
                 // Vertical layout (original)
                 VStack(spacing: 24) {

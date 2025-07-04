@@ -108,12 +108,37 @@ struct WordInputView: View {
             .padding(.horizontal, 8)
             // Header stays at the top
             .overlay(
-                VStack {
-                    Text("Fishbowl")
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
-                        .foregroundColor(.primary)
+                VStack(spacing: 8) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "fish.fill")
+                            .foregroundColor(.accentColor)
+                            .font(.system(size: 32))
+                        Text("Fishbowl")
+                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                            .multilineTextAlignment(.center)
+                    }
+                    Text("Add Your Nouns!")
+                        .font(.title3)
+                        .foregroundColor(.accentColor)
+                        .fontWeight(.semibold)
                         .multilineTextAlignment(.center)
-                        .padding(.top, 20)
+                        .padding(.bottom, 2)
+                    // Rule info card
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundColor(.blue)
+                        Text("Enter any noun (including proper nouns). Just make sure it’s a word the whole group is likely to know!")
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemGray6))
+                    )
+                    .padding(.horizontal, 24)
                     Spacer()
                 }
             )
