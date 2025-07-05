@@ -5,14 +5,51 @@ struct WordInputView: View {
     @State private var newWord: String = ""
     @FocusState private var isTextFieldFocused: Bool
     @State private var keyboardHeight: CGFloat = 0
+    @State private var showInfoSheet: Bool = false
     
     var body: some View {
         GeometryReader { geometry in
-            VStack {
+            VStack(spacing: 0) {
+                // Header at the top
+                VStack(spacing: 4) {
+                    HStack {
+                        Spacer()
+                        HStack(spacing: 10) {
+                            Image(systemName: "fish.fill")
+                                .foregroundColor(.accentColor)
+                                .font(.system(size: 32))
+                            Text("Fishbowl")
+                                .font(.system(size: 36, weight: .bold, design: .rounded))
+                                .foregroundColor(.primary)
+                                .multilineTextAlignment(.center)
+                        }
+                        Spacer()
+                        Button(action: { showInfoSheet = true }) {
+                            Image(systemName: "info.circle")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                        }
+                        .accessibilityLabel("Game Info")
+                        .padding(.trailing, 16)
+                    }
+                    .padding(.top, 12)
+                    Text("Add Your Nouns!")
+                        .font(.title3)
+                        .foregroundColor(.accentColor)
+                        .fontWeight(.semibold)
+                        .multilineTextAlignment(.center)
+                    if gameState.words.count > 0 {
+                        Text("Words added: \(gameState.words.count)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.bottom, 12)
+                // Spacer pushes controls to bottom
                 Spacer()
-                VStack(spacing: 20) {
-                    // Word input section
-                    VStack(spacing: 20) {
+                // Controls at the bottom or just above keyboard
+                VStack(spacing: 16) {
+                    VStack(spacing: 12) {
                         HStack(spacing: 12) {
                             TextField("Enter a word...", text: $newWord)
                                 .textFieldStyle(CustomTextFieldStyle())
@@ -32,51 +69,24 @@ struct WordInputView: View {
                         Text("Press Enter or tap + to add a word")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        // Word count display
-                        if gameState.words.count > 0 {
-                            HStack {
-                                Text("Words added:")
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                Text("\(gameState.words.count)")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.accentColor)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color.accentColor.opacity(0.15))
-                                    .cornerRadius(8)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color(.systemBackground))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.accentColor.opacity(0.2), lineWidth: 1)
-                                    )
-                            )
-                        }
-                        // Add 10 Words button
-                        GameButton.primary(
-                            title: "Add 10 Words",
-                            icon: "wand.and.stars"
-                        ) {
-                            withAnimation(.spring(response: 0.6)) {
-                                gameState.addSampleWords(count: 10)
-                            }
-                        }
-                        .animation(.spring(response: 0.3), value: gameState.words.count)
                     }
-                    .padding(24)
+                    .padding(20)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Color(.systemBackground))
                             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
                     )
                     .frame(maxWidth: 400)
+                    // Add 5 Words button
+                    GameButton.primary(
+                        title: "Add 5 Words",
+                        icon: "wand.and.stars"
+                    ) {
+                        withAnimation(.spring(response: 0.6)) {
+                            gameState.addSampleWords(count: 5)
+                        }
+                    }
+                    .animation(.spring(response: 0.3), value: gameState.words.count)
                     // Start game button
                     if gameState.canStartGame() {
                         GameButton.success(
@@ -89,7 +99,6 @@ struct WordInputView: View {
                             }
                         }
                         .frame(maxWidth: 400)
-                        .padding(.bottom, 20)
                     } else {
                         GameButton.disabled(
                             title: "Start Game",
@@ -99,61 +108,47 @@ struct WordInputView: View {
                             // No action when disabled
                         }
                         .frame(maxWidth: 400)
-                        .padding(.bottom, 20)
                     }
                 }
-                .padding(.bottom, 32)
+                .padding(.horizontal, 8)
+                .padding(.bottom, keyboardHeight > 0 ? keyboardHeight : geometry.safeAreaInsets.bottom + 12)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 8)
-            // Header stays at the top
-            .overlay(
-                VStack(spacing: 8) {
-                    HStack(spacing: 10) {
-                        Image(systemName: "fish.fill")
-                            .foregroundColor(.accentColor)
-                            .font(.system(size: 32))
-                        Text("Fishbowl")
-                            .font(.system(size: 36, weight: .bold, design: .rounded))
-                            .foregroundColor(.primary)
-                            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(.systemGroupedBackground))
+            .sheet(isPresented: $showInfoSheet) {
+                VStack(spacing: 24) {
+                    HStack {
+                        Spacer()
+                        Button(action: { showInfoSheet = false }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.secondary)
+                        }
                     }
-                    Text("Add Your Nouns!")
+                    .padding([.top, .trailing])
+                    Image(systemName: "info.circle.fill")
+                        .font(.system(size: 48))
+                        .foregroundColor(.blue)
+                    Text("Enter any noun (including proper nouns). Just make sure it’s a word the whole group is likely to know!")
                         .font(.title3)
-                        .foregroundColor(.accentColor)
-                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
-                        .padding(.bottom, 2)
-                    // Rule info card
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: "info.circle.fill")
-                            .foregroundColor(.blue)
-                        Text("Enter any noun (including proper nouns). Just make sure it’s a word the whole group is likely to know!")
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                            .multilineTextAlignment(.leading)
-                    }
-                    .padding(12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(.systemGray6))
-                    )
-                    .padding(.horizontal, 24)
+                        .padding()
                     Spacer()
                 }
-            )
-        }
-        .background(Color(.systemGroupedBackground))
-        .onAppear {
-            isTextFieldFocused = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
-            if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-                keyboardHeight = keyboardFrame.height
+                .presentationDetents([.medium, .large])
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-            keyboardHeight = 0
+            .onAppear {
+                isTextFieldFocused = true
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+                if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                    keyboardHeight = keyboardFrame.height
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+                keyboardHeight = 0
+            }
         }
     }
     
@@ -189,3 +184,5 @@ struct CustomTextFieldStyle: TextFieldStyle {
 #Preview {
     WordInputView(gameState: GameState())
 }
+
+

@@ -170,7 +170,7 @@ enum ButtonSize {
         case .medium:
             return GameDesignTokens.buttonPadding
         case .large:
-            return GameDesignTokens.largeButtonPadding
+            return 8 // Reduced for minimal space below Start Game button
         }
     }
     
