@@ -111,7 +111,7 @@ struct WordInputView: View {
                     }
                 }
                 .padding(.horizontal, 8)
-                .padding(.bottom, keyboardHeight > 0 ? keyboardHeight : geometry.safeAreaInsets.bottom + 12)
+                .padding(.bottom, keyboardHeight > 0 ? 20 : geometry.safeAreaInsets.bottom + 12) // test this fixed the word input issue
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemGroupedBackground))
