@@ -2,9 +2,10 @@ import SwiftUI
 
 struct SetupView: View {
     @ObservedObject var gameState: GameState
+    @ObservedObject private var soundManager = SoundManager.shared
     
     var body: some View {
-        GeometryReader { geometry in
+        ScrollView {
             VStack(spacing: 32) {
                 // Header
                 VStack(spacing: 16) {
@@ -19,8 +20,6 @@ struct SetupView: View {
                         .multilineTextAlignment(.center)
                 }
                 .padding(.top, 40)
-                
-                Spacer()
                 
                 // Timer configuration card
                 VStack(spacing: 24) {
@@ -100,7 +99,50 @@ struct SetupView: View {
                 )
                 .padding(.horizontal, 20)
                 
-                Spacer()
+                // Simplified Sound Settings
+                VStack(spacing: 24) {
+                    HStack {
+                        Image(systemName: "speaker.wave.3")
+                            .font(.title)
+                            .foregroundColor(.accentColor)
+                        
+                        Text("Sound Settings")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                        
+                        Spacer()
+                    }
+                    
+                    VStack(spacing: 16) {
+                        // Single Sound Toggle
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Enable Sounds")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                Text("Background music and timer alerts")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: $soundManager.isBackgroundMusicEnabled)
+                                .toggleStyle(SwitchToggleStyle(tint: .accentColor))
+                                .onChange(of: soundManager.isBackgroundMusicEnabled) { newValue in
+                                    soundManager.isSoundEffectsEnabled = newValue
+                                }
+                        }
+                    }
+                }
+                .padding(24)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color(.systemBackground))
+                        .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 4)
+                )
+                .padding(.horizontal, 20)
                 
                 // Proceed to word input button
                 GameButton.primary(
@@ -112,7 +154,7 @@ struct SetupView: View {
                         gameState.proceedToWordInput()
                     }
                 }
-                .frame(maxWidth: geometry.size.width * 0.8)
+                .padding(.horizontal, 20)
                 .padding(.bottom, 40)
             }
         }

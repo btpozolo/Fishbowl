@@ -2,6 +2,8 @@ import SwiftUI
 
 struct RoundTransitionView: View {
     @ObservedObject var gameState: GameState
+    @ObservedObject private var soundManager = SoundManager.shared
+    @State private var showingSoundSettings = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -59,6 +61,27 @@ struct RoundTransitionView: View {
                         }
                     }
                     Spacer()
+                    // Sound Settings Button
+                    Button(action: {
+                        showingSoundSettings = true
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "speaker.wave.2")
+                                .font(.caption)
+                            Text("Sound Settings")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color(.systemGray6))
+                        )
+                    }
+                    .padding(.bottom, 8)
+                    
                     // Bottom: Continue button
                     GameButton.primary(
                         title: continueButtonText,
@@ -159,6 +182,27 @@ struct RoundTransitionView: View {
                     
                     Spacer()
                     
+                    // Sound Settings Button
+                    Button(action: {
+                        showingSoundSettings = true
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "speaker.wave.2")
+                                .font(.caption)
+                            Text("Sound Settings")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color(.systemGray6))
+                        )
+                    }
+                    .padding(.bottom, 12)
+                    
                     // Continue button with enhanced design
                     GameButton.primary(
                         title: continueButtonText,
@@ -175,6 +219,9 @@ struct RoundTransitionView: View {
             }
         }
         .background(Color(.systemGroupedBackground))
+        .sheet(isPresented: $showingSoundSettings) {
+            SoundSettingsView()
+        }
     }
     
     private var transitionTitle: String {

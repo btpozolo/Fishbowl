@@ -84,6 +84,7 @@ class GameState: ObservableObject {
     private var timer: Timer?
     private var unusedWords: [Word] = []
     private var roundUsedWordIds: Set<UUID> = [] // Track used word IDs per round
+    private let soundManager = SoundManager.shared
     
     // MARK: - Setup Phase
     func proceedToWordInput() {
@@ -115,12 +116,14 @@ class GameState: ObservableObject {
         timeRemaining = timerDuration
         setupRound()
         startNextTurn()
+        soundManager.handleGamePhaseChange(to: .playing)
     }
     
     // Call this from the transition screen's Continue button
     func beginNextTurn() {
         currentPhase = .playing
         startNextTurn()
+        soundManager.handleGamePhaseChange(to: .playing)
     }
     
     // Internal: sets up the next word and starts the timer
@@ -177,6 +180,7 @@ class GameState: ObservableObject {
     
     private func timerExpired() {
         stopTimer()
+        soundManager.handleTimerExpired()
         // If there are still words left, switch teams and continue the round
         if !unusedWords.isEmpty {
             currentTeam = currentTeam == 1 ? 2 : 1
@@ -184,6 +188,7 @@ class GameState: ObservableObject {
             currentPhase = .roundTransition
             self.currentWord = nil
             lastTransitionReason = .timerExpired
+            soundManager.handleGamePhaseChange(to: .roundTransition)
         } else {
             // If no words left, move to next round or end game
             lastTransitionReason = .wordsExhausted
@@ -197,6 +202,7 @@ class GameState: ObservableObject {
             // If we're in the last round and words are exhausted, end the game
             if currentRound == .oneWord {
                 currentPhase = .gameOver
+                soundManager.handleGamePhaseChange(to: .gameOver)
                 return
             }
             // Advance to next round, same team continues, keep remaining time
@@ -244,8 +250,10 @@ class GameState: ObservableObject {
             stopTimer()
             if currentRound == .oneWord {
                 currentPhase = .gameOver
+                soundManager.handleGamePhaseChange(to: .gameOver)
             } else {
                 currentPhase = .roundTransition
+                soundManager.handleGamePhaseChange(to: .roundTransition)
             }
             // Do not switch teams, do not reset timer
             self.currentWord = nil
@@ -278,6 +286,7 @@ class GameState: ObservableObject {
         stopTimer()
         self.currentWord = nil
         unusedWords.removeAll()
+        soundManager.handleGamePhaseChange(to: .setup)
     }
     
     func getWinner() -> Int? {
