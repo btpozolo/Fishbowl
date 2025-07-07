@@ -20,8 +20,9 @@ class SoundManager: ObservableObject {
     // MARK: - Audio Session Setup
     private func setupAudioSession() {
         do {
-            try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: [.mixWithOthers])
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true)
+            print("Audio session setup successful")
         } catch {
             print("Failed to setup audio session: \(error)")
         }
@@ -29,21 +30,37 @@ class SoundManager: ObservableObject {
     
     // MARK: - Background Music
     func startBackgroundMusic() {
-        guard isBackgroundMusicEnabled else { return }
+        guard isBackgroundMusicEnabled else { 
+            print("Background music disabled")
+            return 
+        }
+        
+        print("Starting background music...")
         
         // Stop any existing background music
         stopBackgroundMusic()
         
-        guard let url = Bundle.main.url(forResource: "clock_tick_old", withExtension: "wav") else {
+        // Try with subdirectory first
+        var url = Bundle.main.url(forResource: "clock_tick_old", withExtension: "wav", subdirectory: "Sounds")
+        
+        // If not found, try without subdirectory
+        if url == nil {
+            url = Bundle.main.url(forResource: "clock_tick_old", withExtension: "wav")
+        }
+        
+        guard let finalUrl = url else {
             print("Background music file not found")
             return
         }
         
+        print("Background music URL: \(finalUrl)")
+        
         do {
-            backgroundMusicPlayer = try AVAudioPlayer(contentsOf: url)
+            backgroundMusicPlayer = try AVAudioPlayer(contentsOf: finalUrl)
             backgroundMusicPlayer?.volume = backgroundMusicVolume
             backgroundMusicPlayer?.numberOfLoops = -1 // Loop indefinitely
             backgroundMusicPlayer?.play()
+            print("Background music started successfully")
         } catch {
             print("Failed to play background music: \(error)")
         }
@@ -65,17 +82,33 @@ class SoundManager: ObservableObject {
     
     // MARK: - Sound Effects
     func playTimeUpSound() {
-        guard isSoundEffectsEnabled else { return }
+        guard isSoundEffectsEnabled else { 
+            print("Sound effects disabled")
+            return 
+        }
         
-        guard let url = Bundle.main.url(forResource: "final_triple_buzz_mechanical", withExtension: "wav") else {
+        print("Playing time up sound...")
+        
+        // Try with subdirectory first
+        var url = Bundle.main.url(forResource: "2_gentle_pulse_high_pitch", withExtension: "wav", subdirectory: "Sounds")
+        
+        // If not found, try without subdirectory
+        if url == nil {
+            url = Bundle.main.url(forResource: "2_gentle_pulse_high_pitch", withExtension: "wav")
+        }
+        
+        guard let finalUrl = url else {
             print("Time up sound file not found")
             return
         }
         
+        print("Time up sound URL: \(finalUrl)")
+        
         do {
-            effectPlayer = try AVAudioPlayer(contentsOf: url)
+            effectPlayer = try AVAudioPlayer(contentsOf: finalUrl)
             effectPlayer?.volume = soundEffectsVolume
             effectPlayer?.play()
+            print("Time up sound played successfully")
         } catch {
             print("Failed to play time up sound: \(error)")
         }
@@ -117,6 +150,7 @@ class SoundManager: ObservableObject {
     
     // MARK: - Game State Integration
     func handleGamePhaseChange(to phase: GamePhase) {
+        print("Game phase changed to: \(phase)")
         switch phase {
         case .playing:
             startBackgroundMusic()
@@ -126,6 +160,18 @@ class SoundManager: ObservableObject {
     }
     
     func handleTimerExpired() {
+        print("Timer expired - playing time up sound")
+        playTimeUpSound()
+    }
+    
+    // MARK: - Debug Functions
+    func testBackgroundMusic() {
+        print("Testing background music...")
+        startBackgroundMusic()
+    }
+    
+    func testTimeUpSound() {
+        print("Testing time up sound...")
         playTimeUpSound()
     }
 } 

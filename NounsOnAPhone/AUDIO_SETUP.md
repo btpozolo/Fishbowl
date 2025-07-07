@@ -12,7 +12,7 @@ To enable sound effects in the Fishbowl game, you need to add two audio files to
 - **Volume**: Should be subtle and not distracting from gameplay
 
 ### 2. Time-Up Sound Effect
-- **File Name**: `final_triple_buzz_mechanical.wav`
+- **File Name**: `2_gentle_pulse_high_pitch.wav`
 - **Purpose**: Alert sound that plays when the timer expires
 - **Format**: WAV (as per your current setup)
 - **Duration**: 1-3 seconds
@@ -23,13 +23,15 @@ To enable sound effects in the Fishbowl game, you need to add two audio files to
 1. **Open your Xcode project**
 2. **Right-click on the `NounsOnAPhone` folder** in the project navigator
 3. **Select "Add Files to 'NounsOnAPhone'"**
-4. **Choose your audio files** (`background_music.mp3` and `time_up.wav`)
+4. **Choose your audio files** (`clock_tick_old.wav` and `2_gentle_pulse_high_pitch.wav`)
 5. **Make sure "Add to target" is checked** for your main app target
 6. **Click "Add"**
 
+**Note**: The audio files should be placed in the `Sounds` subfolder for better organization.
+
 ## File Placement
 
-The audio files should be placed directly in the `NounsOnAPhone` folder alongside your Swift files, not in the Assets.xcassets folder.
+The audio files should be placed in the `NounsOnAPhone/Sounds` subfolder for better organization, not in the Assets.xcassets folder.
 
 ## Expected File Structure
 
@@ -41,8 +43,9 @@ NounsOnAPhone/
 ├── GameModels.swift
 ├── SoundManager.swift
 ├── SoundSettingsView.swift
-├── clock_tick_old.wav           ← Add this file
-├── final_triple_buzz_mechanical.wav  ← Add this file
+├── Sounds/
+│   ├── clock_tick_old.wav           ← Background music
+│   └── 2_gentle_pulse_high_pitch.wav  ← Time-up sound
 └── Assets.xcassets/
 ```
 
@@ -57,8 +60,8 @@ Once you've added the audio files:
 
 ## Troubleshooting
 
-- **"Background music file not found"**: Make sure `clock_tick_old.wav` is added to the project and target
-- **"Time up sound file not found"**: Make sure `final_triple_buzz_mechanical.wav` is added to the project and target
+- **"Background music file not found"**: Make sure `clock_tick_old.wav` is added to the project and target in the Sounds folder
+- **"Time up sound file not found"**: Make sure `2_gentle_pulse_high_pitch.wav` is added to the project and target in the Sounds folder
 - **No sound playing**: Check that audio is enabled in the sound settings
 - **Audio not working on device**: Make sure the device is not on silent mode
 
