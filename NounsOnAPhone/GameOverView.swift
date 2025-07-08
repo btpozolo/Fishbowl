@@ -79,6 +79,15 @@ struct GameOverView: View {
                                 score: gameState.team2Score,
                                 isWinner: gameState.getWinner() == 2
                             )
+                            
+                            // Score progression chart (compact version for horizontal layout)
+                            ScoreProgressionChart(scoreHistory: gameState.scoreHistory)
+                            
+                            // Words per minute table (compact version for horizontal layout)
+                            WordsPerMinuteTable(
+                                wpmData: gameState.getWordsPerMinuteData(),
+                                overallWPM: gameState.getOverallWordsPerMinute() as (team1WPM: Double?, team2WPM: Double?)
+                            )
                         }
                         
                         Spacer()
@@ -151,6 +160,15 @@ struct GameOverView: View {
                                     )
                                 }
                             }
+                            
+                            // Score progression chart
+                            ScoreProgressionChart(scoreHistory: gameState.scoreHistory)
+                            
+                            // Words per minute table
+                            WordsPerMinuteTable(
+                                wpmData: gameState.getWordsPerMinuteData(),
+                                overallWPM: gameState.getOverallWordsPerMinute() as (team1WPM: Double?, team2WPM: Double?)
+                            )
                             
                             // Word statistics
                             WordStatisticsView(wordStats: gameState.getWordStatistics())
