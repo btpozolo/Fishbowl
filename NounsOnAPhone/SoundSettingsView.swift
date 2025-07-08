@@ -59,7 +59,7 @@ struct SoundSettingsView: View {
                                     step: 0.1
                                 )
                                 .accentColor(.accentColor)
-                                .onChange(of: soundManager.backgroundMusicVolume) { _ in
+                                .onChange(of: soundManager.backgroundMusicVolume) { oldValue, newValue in
                                     soundManager.updateBackgroundMusicVolume()
                                 }
                             }

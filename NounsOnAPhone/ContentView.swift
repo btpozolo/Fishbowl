@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var gameState = GameState()
-    
+
     var body: some View {
         Group {
             switch gameState.currentPhase {
@@ -27,7 +27,22 @@ struct ContentView: View {
                 GameOverView(gameState: gameState)
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: gameState.currentPhase)
+        .onChange(of: gameState.currentPhase) { oldPhase, newPhase in
+            switch newPhase {
+            case .setup, .wordInput, .gameOver:
+                OrientationManager.shared.lock(to: .portrait)
+            case .playing, .roundTransition, .gameOverview:
+                OrientationManager.shared.lock(to: [.portrait, .landscapeLeft, .landscapeRight])
+            }
+        }
+        .onAppear {
+            switch gameState.currentPhase {
+            case .setup, .wordInput, .gameOver:
+                OrientationManager.shared.lock(to: .portrait)
+            case .playing, .roundTransition, .gameOverview:
+                OrientationManager.shared.lock(to: [.portrait, .landscapeLeft, .landscapeRight])
+            }
+        }
     }
 }
 

@@ -280,6 +280,12 @@ struct GamePlayView: View {
             }
         }
         .background(Color(.systemGroupedBackground))
+        .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
     }
     
     private var timeString: String {

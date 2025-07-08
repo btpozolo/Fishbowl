@@ -158,7 +158,7 @@ struct SetupView: View {
                             
                             Toggle("", isOn: $soundManager.isBackgroundMusicEnabled)
                                 .toggleStyle(SwitchToggleStyle(tint: .accentColor))
-                                .onChange(of: soundManager.isBackgroundMusicEnabled) { newValue in
+                                .onChange(of: soundManager.isBackgroundMusicEnabled) { oldValue, newValue in
                                     soundManager.isSoundEffectsEnabled = newValue
                                 }
                         }

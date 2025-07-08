@@ -222,6 +222,12 @@ struct RoundTransitionView: View {
         .sheet(isPresented: $showingSoundSettings) {
             SoundSettingsView()
         }
+        .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
     }
     
     private var transitionTitle: String {
