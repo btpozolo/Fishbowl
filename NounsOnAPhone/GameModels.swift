@@ -84,6 +84,15 @@ class GameState: ObservableObject {
     @Published var skipsByWord: [UUID: Int] = [:] // Track skips per word by ID
     @Published var timeSpentByWord: [UUID: Int] = [:] // Track time spent on each word by ID
     
+    // New analytics tracking
+    @Published var scoreHistory: [(turn: Int, team1Score: Int, team2Score: Int)] = []
+    @Published var roundStats: [RoundType: (team1Time: Int, team2Time: Int, team1Correct: Int, team2Correct: Int)] = [:]
+    @Published var currentRoundStartTime: Date?
+    @Published var currentTeamStartTime: Date?
+    @Published var teamTurnCount: [Int: Int] = [1: 0, 2: 0] // Track how many turns each team has taken
+
+    // Add this flag to prevent double-counting turn time
+    private var turnTimeAlreadyAdded: Bool = false
     private var timer: Timer?
     private var unusedWords: [Word] = []
     private var roundUsedWordIds: Set<UUID> = [] // Track used word IDs per round
@@ -147,12 +156,19 @@ class GameState: ObservableObject {
         if roundUsedWordIds.isEmpty {
             // New round - all words are available
             unusedWords = words
+            // Initialize round stats for new round
+            roundStats[currentRound] = (team1Time: 0, team2Time: 0, team1Correct: 0, team2Correct: 0)
+            currentRoundStartTime = Date()
         } else {
             // Same round, different team - only unused words from this round
             unusedWords = words.filter { word in
                 !roundUsedWordIds.contains(word.id)
             }
         }
+        // Set currentTeamStartTime at the start of each turn
+        currentTeamStartTime = Date()
+        // Reset the flag at the start of each turn
+        turnTimeAlreadyAdded = false
     }
     
     private func getNextWord() {
@@ -196,8 +212,22 @@ class GameState: ObservableObject {
             timeSpentByWord[currentWord.id, default: 0] += adjustedTimeSpent
         }
         
+        // At the END of the team's turn (timer expired), add total turn time to teamXTime, but only if not already added
+        if !turnTimeAlreadyAdded, let teamStartTime = currentTeamStartTime {
+            let teamTimeSpent = Int(Date().timeIntervalSince(teamStartTime))
+            if currentTeam == 1 {
+                roundStats[currentRound]?.team1Time += teamTimeSpent
+            } else {
+                roundStats[currentRound]?.team2Time += teamTimeSpent
+            }
+            turnTimeAlreadyAdded = true
+        }
+        
         // If there are still words left, switch teams and continue the round
         if !unusedWords.isEmpty {
+            // Increment turn count for current team
+            teamTurnCount[currentTeam, default: 0] += 1
+            
             currentTeam = currentTeam == 1 ? 2 : 1
             timeRemaining = timerDuration
             currentPhase = .roundTransition
@@ -213,6 +243,9 @@ class GameState: ObservableObject {
     
     // Call this when the user presses 'Continue' on the transition screen
     func advanceTeamOrRound(wordsExhausted: Bool = false) {
+        // Record score history when teams switch or round advances
+        recordScoreHistory()
+        
         if wordsExhausted || (currentRound != .oneWord && roundUsedWordIds.count >= words.count) {
             // If we're in the last round and words are exhausted, end the game
             if currentRound == .oneWord {
@@ -253,12 +286,26 @@ class GameState: ObservableObject {
             timeSpentByWord[currentWord.id, default: 0] += adjustedTimeSpent
         }
         
+        // Only increment correct count for the team (do NOT add to teamXTime here)
+        if currentTeam == 1 {
+            roundStats[currentRound]?.team1Correct += 1
+        } else {
+            roundStats[currentRound]?.team2Correct += 1
+        }
+        
         // Increment current team's score
         if currentTeam == 1 {
             team1Score += 1
         } else {
             team2Score += 1
         }
+        
+        // Increment turn count for current team
+        teamTurnCount[currentTeam, default: 0] += 1
+        
+        // Reset team start time for next word (but do NOT update currentTeamStartTime here)
+        wordStartTime = Date()
+        
         // Mark word as used in this round by its unique ID
         roundUsedWordIds.insert(currentWord.id)
         // Mark word as used overall
@@ -272,7 +319,21 @@ class GameState: ObservableObject {
         // If there are no more words, end the round or game
         if unusedWords.isEmpty {
             stopTimer()
+            
+            // At the END of the team's turn (round ends), add total turn time to teamXTime, but only if not already added
+            if !turnTimeAlreadyAdded, let teamStartTime = currentTeamStartTime {
+                let teamTimeSpent = Int(Date().timeIntervalSince(teamStartTime))
+                if currentTeam == 1 {
+                    roundStats[currentRound]?.team1Time += teamTimeSpent
+                } else {
+                    roundStats[currentRound]?.team2Time += teamTimeSpent
+                }
+                turnTimeAlreadyAdded = true
+            }
+            
             if currentRound == .oneWord {
+                // Record final score history when game ends
+                recordScoreHistory()
                 currentPhase = .gameOver
                 soundManager.handleGamePhaseChange(to: .gameOver)
             } else {
@@ -330,6 +391,11 @@ class GameState: ObservableObject {
         currentRound = .describe
         timeRemaining = timerDuration
         roundUsedWordIds.removeAll()
+        scoreHistory.removeAll()
+        roundStats.removeAll()
+        currentRoundStartTime = nil
+        currentTeamStartTime = nil
+        teamTurnCount = [1: 0, 2: 0]
     }
     
     func resetGame() {
@@ -386,5 +452,57 @@ class GameState: ObservableObject {
         
         // Sort by average time descending (slowest words first)
         return stats.sorted { $0.averageTime > $1.averageTime }
+    }
+    
+    // MARK: - Analytics Helper Methods
+    
+    private func recordScoreHistory() {
+        // Record score history when teams switch or at game end
+        let turnNumber = scoreHistory.count + 1
+        scoreHistory.append((turn: turnNumber, team1Score: team1Score, team2Score: team2Score))
+    }
+    
+    struct WordsPerMinuteData {
+        let round: RoundType
+        let team1WPM: Double?
+        let team2WPM: Double?
+    }
+    
+    func getWordsPerMinuteData() -> [WordsPerMinuteData] {
+        var wpmData: [WordsPerMinuteData] = []
+        
+        for round in RoundType.allCases {
+            if let stats = roundStats[round] {
+                let team1WPM: Double? = stats.team1Time > 0 ? Double(stats.team1Correct) / (Double(stats.team1Time) / 60.0) : nil
+                let team2WPM: Double? = stats.team2Time > 0 ? Double(stats.team2Correct) / (Double(stats.team2Time) / 60.0) : nil
+                
+                wpmData.append(WordsPerMinuteData(
+                    round: round,
+                    team1WPM: team1WPM,
+                    team2WPM: team2WPM
+                ))
+            }
+        }
+        
+        return wpmData
+    }
+    
+    func getOverallWordsPerMinute() -> (team1WPM: Double?, team2WPM: Double?) {
+        var team1TotalTime = 0
+        var team2TotalTime = 0
+        var team1TotalCorrect = 0
+        var team2TotalCorrect = 0
+        
+        for (_, stats) in roundStats {
+            team1TotalTime += stats.team1Time
+            team2TotalTime += stats.team2Time
+            team1TotalCorrect += stats.team1Correct
+            team2TotalCorrect += stats.team2Correct
+        }
+        
+        let team1WPM: Double? = team1TotalTime > 0 ? Double(team1TotalCorrect) / (Double(team1TotalTime) / 60.0) : nil
+        let team2WPM: Double? = team2TotalTime > 0 ? Double(team2TotalCorrect) / (Double(team2TotalTime) / 60.0) : nil
+        
+        return (team1WPM: team1WPM, team2WPM: team2WPM)
     }
 } 
