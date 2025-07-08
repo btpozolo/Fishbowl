@@ -80,6 +80,8 @@ class GameState: ObservableObject {
     @Published var currentTeam: Int = 1
     @Published var isTimerRunning: Bool = false
     @Published var lastTransitionReason: TransitionReason? = nil
+    @Published var skipEnabled: Bool = false // Whether skip button is enabled
+    @Published var skipsByWord: [UUID: Int] = [:] // Track skips per word by ID
     
     private var timer: Timer?
     private var unusedWords: [Word] = []
@@ -260,6 +262,27 @@ class GameState: ObservableObject {
             lastTransitionReason = .wordsExhausted
         } else {
             getNextWord()
+        }
+    }
+
+    // MARK: - Skip Logic
+    func skipCurrentWord() {
+        guard let currentWord = currentWord else { return }
+        // Only allow skip if more than one word remains
+        if unusedWords.count > 1 {
+            // Remove current word from its position
+            if let index = unusedWords.firstIndex(where: { $0.id == currentWord.id }) {
+                let skippedWord = unusedWords.remove(at: index)
+                // Add to end of unusedWords
+                unusedWords.append(skippedWord)
+                // Increment skip count for this word
+                skipsByWord[skippedWord.id, default: 0] += 1
+                // Show next word
+                getNextWord()
+            }
+        } else {
+            // Only one word left, do not skip
+            // TODO: Provide feedback to user (e.g., shake animation)
         }
     }
     

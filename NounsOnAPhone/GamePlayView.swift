@@ -62,34 +62,45 @@ struct GamePlayView: View {
                                 .animation(.spring(response: 0.6, dampingFraction: 0.8), value: currentWord.text)
                         }
                         
-                        // Bottom: Correct button
-                        Button(action: {
-                            withAnimation(.spring(response: 0.4)) {
-                                gameState.wordGuessed()
-                            }
-                        }) {
+                        // Bottom: Correct/Skip buttons
+                        if gameState.skipEnabled {
                             HStack(spacing: 16) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 32))
-                                Text("Correct!")
-                                    .font(.system(size: 32, weight: .semibold))
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 20)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [.green, .green.opacity(0.8)]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                                GameButton.skip(
+                                    size: .large,
+                                    action: {
+                                        withAnimation(.spring(response: 0.4)) {
+                                            gameState.skipCurrentWord()
+                                        }
+                                    }
                                 )
-                            )
-                            .cornerRadius(20)
-                            .shadow(color: .green.opacity(0.3), radius: 12, x: 0, y: 4)
+                                .disabled(gameState.currentWord == nil || gameState.words.count <= 1)
+
+                                GameButton.success(
+                                    title: "Correct!",
+                                    icon: "checkmark.circle.fill",
+                                    size: .large
+                                ) {
+                                    withAnimation(.spring(response: 0.4)) {
+                                        gameState.wordGuessed()
+                                    }
+                                }
+                                .disabled(gameState.currentWord == nil)
+                            }
+                            .padding(.bottom, 20)
+                        } else {
+                            GameButton.success(
+                                title: "Correct!",
+                                icon: "checkmark.circle.fill",
+                                size: .large
+                            ) {
+                                withAnimation(.spring(response: 0.4)) {
+                                    gameState.wordGuessed()
+                                }
+                            }
+                            .scaleEffect(1.0)
+                            .animation(.spring(response: 0.3), value: gameState.team1Score + gameState.team2Score)
+                            .padding(.bottom, 20)
                         }
-                        .scaleEffect(1.0)
-                        .animation(.spring(response: 0.3), value: gameState.team1Score + gameState.team2Score)
-                        .padding(.bottom, 20)
                     }
                     .frame(maxWidth: geometry.size.width * 0.75)
                     
@@ -220,19 +231,44 @@ struct GamePlayView: View {
                         .padding(.horizontal, 20)
                     }
                     Spacer()
-                    // Correct button with enhanced design
-                    GameButton.success(
-                        title: "Correct!",
-                        icon: "checkmark.circle.fill",
-                        size: .large
-                    ) {
-                        withAnimation(.spring(response: 0.4)) {
-                            gameState.wordGuessed()
+                    // Skip/Correct buttons
+                    if gameState.skipEnabled {
+                        VStack(spacing: 16) {
+                            GameButton.skip(
+                                size: .large,
+                                action: {
+                                    withAnimation(.spring(response: 0.4)) {
+                                        gameState.skipCurrentWord()
+                                    }
+                                }
+                            )
+                            .disabled(gameState.currentWord == nil || gameState.words.count <= 1)
+
+                            GameButton.success(
+                                title: "Correct!",
+                                icon: "checkmark.circle.fill",
+                                size: .large
+                            ) {
+                                withAnimation(.spring(response: 0.4)) {
+                                    gameState.wordGuessed()
+                                }
+                            }
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 32)
+                    } else {
+                        GameButton.success(
+                            title: "Correct!",
+                            icon: "checkmark.circle.fill",
+                            size: .large
+                        ) {
+                            withAnimation(.spring(response: 0.4)) {
+                                gameState.wordGuessed()
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 32)
                     }
-                    .animation(.spring(response: 0.3), value: gameState.team1Score + gameState.team2Score)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 32)
                     // Scores with improved design
                     HStack(spacing: 20) {
                         ScoreDisplay(teamNumber: 1, score: gameState.team1Score, isCurrentTeam: gameState.currentTeam == 1)
@@ -332,6 +368,7 @@ struct ScoreDisplay: View {
     sampleGameState.team1Score = 3
     sampleGameState.team2Score = 2
     sampleGameState.currentTeam = 1
+    sampleGameState.skipEnabled = true
     
     return GamePlayView(gameState: sampleGameState)
 }
@@ -350,6 +387,7 @@ struct ScoreDisplay: View {
     sampleGameState.team1Score = 3
     sampleGameState.team2Score = 2
     sampleGameState.currentTeam = 1
+    sampleGameState.skipEnabled = true
     
     return GamePlayView(gameState: sampleGameState)
 }

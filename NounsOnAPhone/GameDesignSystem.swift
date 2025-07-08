@@ -270,6 +270,16 @@ extension GameButton {
     ) -> GameButton {
         GameButton(title: title, icon: icon, style: .disabled, size: size, action: action)
     }
+    
+    // Skip/neutral buttons
+    static func skip(
+        title: String = "Skip",
+        icon: String? = "arrowshape.turn.up.right.circle",
+        size: ButtonSize = .large,
+        action: @escaping () -> Void
+    ) -> GameButton {
+        GameButton(title: title, icon: icon, style: .secondary, size: size, action: action)
+    }
 }
 
 // MARK: - View Modifiers for Consistent Styling

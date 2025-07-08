@@ -6,7 +6,7 @@ struct SetupView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 32) {
+            VStack(spacing: 12) {
                 // Header
                 VStack(spacing: 16) {
                     Text("Fishbowl")
@@ -90,6 +90,34 @@ struct SetupView: View {
                             }
                         }
                     }
+                }
+                .padding(24)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color(.systemBackground))
+                        .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 4)
+                )
+                .padding(.horizontal, 20)
+
+                // Skip Button Setting
+                VStack(spacing: 12) {
+                    HStack {
+                        Image(systemName: "arrowshape.turn.up.right")
+                            .font(.title)
+                            .foregroundColor(.accentColor)
+                        Text("Enable Skip")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Toggle("", isOn: $gameState.skipEnabled)
+                            .toggleStyle(SwitchToggleStyle(tint: .accentColor))
+                    }
+                    Text("Allow players to skip a word during gameplay. Skipped words will return later in the round.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
+                        .padding(.leading, 0)
                 }
                 .padding(24)
                 .background(
