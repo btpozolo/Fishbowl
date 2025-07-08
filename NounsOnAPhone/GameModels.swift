@@ -82,10 +82,12 @@ class GameState: ObservableObject {
     @Published var lastTransitionReason: TransitionReason? = nil
     @Published var skipEnabled: Bool = false // Whether skip button is enabled
     @Published var skipsByWord: [UUID: Int] = [:] // Track skips per word by ID
+    @Published var timeSpentByWord: [UUID: Int] = [:] // Track time spent on each word by ID
     
     private var timer: Timer?
     private var unusedWords: [Word] = []
     private var roundUsedWordIds: Set<UUID> = [] // Track used word IDs per round
+    private var wordStartTime: Date? // Track when current word was displayed
     private let soundManager = SoundManager.shared
     
     // MARK: - Setup Phase
@@ -156,8 +158,10 @@ class GameState: ObservableObject {
     private func getNextWord() {
         if let randomIndex = unusedWords.indices.randomElement() {
             self.currentWord = unusedWords[randomIndex]
+            self.wordStartTime = Date() // Start timing when word is displayed
         } else {
             self.currentWord = nil
+            self.wordStartTime = nil
         }
     }
     
@@ -183,6 +187,15 @@ class GameState: ObservableObject {
     private func timerExpired() {
         stopTimer()
         soundManager.handleTimerExpired()
+        
+        // Record time spent on current word if timer expires
+        if let currentWord = currentWord, let startTime = wordStartTime {
+            let timeSpent = Int(Date().timeIntervalSince(startTime))
+            // Ensure minimum 1 second is recorded for any word that was displayed
+            let adjustedTimeSpent = max(timeSpent, 1)
+            timeSpentByWord[currentWord.id, default: 0] += adjustedTimeSpent
+        }
+        
         // If there are still words left, switch teams and continue the round
         if !unusedWords.isEmpty {
             currentTeam = currentTeam == 1 ? 2 : 1
@@ -231,6 +244,15 @@ class GameState: ObservableObject {
     // MARK: - Game Actions
     func wordGuessed() {
         guard let currentWord = currentWord else { return }
+        
+        // Record time spent on this word
+        if let startTime = wordStartTime {
+            let timeSpent = Int(Date().timeIntervalSince(startTime))
+            // Ensure minimum 1 second is recorded for any word that was displayed
+            let adjustedTimeSpent = max(timeSpent, 1)
+            timeSpentByWord[currentWord.id, default: 0] += adjustedTimeSpent
+        }
+        
         // Increment current team's score
         if currentTeam == 1 {
             team1Score += 1
@@ -270,6 +292,14 @@ class GameState: ObservableObject {
         guard let currentWord = currentWord else { return }
         // Only allow skip if more than one word remains
         if unusedWords.count > 1 {
+            // Record time spent on this word before skipping
+            if let startTime = wordStartTime {
+                let timeSpent = Int(Date().timeIntervalSince(startTime))
+                // Ensure minimum 1 second is recorded for any word that was displayed
+                let adjustedTimeSpent = max(timeSpent, 1)
+                timeSpentByWord[currentWord.id, default: 0] += adjustedTimeSpent
+            }
+            
             // Remove current word from its position
             if let index = unusedWords.firstIndex(where: { $0.id == currentWord.id }) {
                 let skippedWord = unusedWords.remove(at: index)
@@ -309,6 +339,8 @@ class GameState: ObservableObject {
         stopTimer()
         self.currentWord = nil
         unusedWords.removeAll()
+        skipsByWord.removeAll()
+        timeSpentByWord.removeAll()
         soundManager.handleGamePhaseChange(to: .setup)
     }
     
@@ -320,5 +352,39 @@ class GameState: ObservableObject {
         } else {
             return nil // Tie
         }
+    }
+    
+    // MARK: - Word Statistics
+    struct WordStat {
+        let word: Word
+        let skips: Int
+        let averageTime: Double
+        let totalTime: Int
+    }
+    
+    func getWordStatistics() -> [WordStat] {
+        var stats: [WordStat] = []
+        
+        for word in words {
+            let skips = skipsByWord[word.id] ?? 0
+            let totalTime = timeSpentByWord[word.id] ?? 0
+            
+            // Only include words that were actually played (have time spent or skips)
+            // This filters out words that were never displayed during the game
+            if totalTime > 0 || skips > 0 {
+                // Calculate average time: total time divided by 3 (since each word appears in 3 rounds)
+                let averageTime = Double(totalTime) / 3.0
+                
+                stats.append(WordStat(
+                    word: word,
+                    skips: skips,
+                    averageTime: averageTime,
+                    totalTime: totalTime
+                ))
+            }
+        }
+        
+        // Sort by average time descending (slowest words first)
+        return stats.sorted { $0.averageTime > $1.averageTime }
     }
 } 

@@ -88,80 +88,94 @@ struct GameOverView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 20)
             } else {
-                // Vertical layout (original)
-                VStack(spacing: 40) {
-                    // Header with improved styling
+                // Vertical layout with scrollable middle section
+                VStack(spacing: 0) {
+                    // Fixed header
                     VStack(spacing: 16) {
                         Text("Fishbowl")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
-                        
-                        Text("Final Results")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
                     }
                     .padding(.top, 20)
+                    .padding(.horizontal, 20)
                     
-                    // Winner or tie announcement with enhanced design
-                    VStack(spacing: 24) {
-                        if let winner = gameState.getWinner() {
-                            WinnerOrTieView(isTie: false, winner: winner)
-                        } else {
-                            WinnerOrTieView(isTie: true, winner: nil)
-                        }
-                    }
-                    .padding(24)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color(.systemBackground))
-                            .shadow(color: .black.opacity(0.08), radius: 16, x: 0, y: 8)
-                    )
-                    
-                    // Final scores with improved design
-                    VStack(spacing: 20) {
-                        Text("Final Scores")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                    // Scrollable middle section
+                    ScrollView {
+                        VStack(spacing: 32) {
+                            // Final Results title at top of scrollable section
+                            Text("Final Results")
+                                .font(.title3)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.top, 8)
+                            
+                            // Winner or tie announcement with enhanced design
+                            VStack(spacing: 24) {
+                                if let winner = gameState.getWinner() {
+                                    WinnerOrTieView(isTie: false, winner: winner)
+                                } else {
+                                    WinnerOrTieView(isTie: true, winner: nil)
+                                }
+                            }
+                            .padding(24)
                             .background(
-                                Capsule()
-                                    .fill(Color(.systemGray6))
-                            )
-                        
-                        HStack(spacing: 16) {
-                            FinalScoreCard(
-                                teamNumber: 1,
-                                score: gameState.team1Score,
-                                isWinner: gameState.getWinner() == 1
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color(.systemBackground))
+                                    .shadow(color: .black.opacity(0.08), radius: 16, x: 0, y: 8)
                             )
                             
-                            FinalScoreCard(
-                                teamNumber: 2,
-                                score: gameState.team2Score,
-                                isWinner: gameState.getWinner() == 2
-                            )
+                            // Final scores with improved design
+                            VStack(spacing: 20) {
+                                Text("Final Scores")
+                                    .font(.headline)
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color(.systemGray6))
+                                    )
+                                
+                                HStack(spacing: 16) {
+                                    FinalScoreCard(
+                                        teamNumber: 1,
+                                        score: gameState.team1Score,
+                                        isWinner: gameState.getWinner() == 1
+                                    )
+                                    
+                                    FinalScoreCard(
+                                        teamNumber: 2,
+                                        score: gameState.team2Score,
+                                        isWinner: gameState.getWinner() == 2
+                                    )
+                                }
+                            }
+                            
+                            // Word statistics
+                            WordStatisticsView(wordStats: gameState.getWordStatistics())
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 20)
                     }
                     
-                    Spacer()
-                    
-                    // Play again button with enhanced design and consistent bottom padding
-                    GameButton.success(
-                        title: "Play Again",
-                        icon: "arrow.clockwise.circle.fill",
-                        size: .large
-                    ) {
-                        withAnimation(.spring(response: 0.6)) {
-                            gameState.resetGame()
+                    // Fixed footer
+                    VStack(spacing: 16) {
+                        // Play again button with enhanced design
+                        GameButton.success(
+                            title: "Play Again",
+                            icon: "arrow.clockwise.circle.fill",
+                            size: .large
+                        ) {
+                            withAnimation(.spring(response: 0.6)) {
+                                gameState.resetGame()
+                            }
                         }
+                        .padding(.horizontal, 20)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 40) // Consistent bottom padding for all cases
+                    .padding(.bottom, 40)
+                    .background(Color(.systemGroupedBackground))
                 }
-                .padding(.horizontal, 20)
             }
         }
         .background(Color(.systemGroupedBackground))
