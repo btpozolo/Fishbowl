@@ -81,7 +81,7 @@ struct GameOverView: View {
                             )
                             
                             // Score progression chart (compact version for horizontal layout)
-                            ScoreProgressionChart(scoreHistory: gameState.scoreHistory)
+                            ScoreProgressionChart(team1TurnScores: gameState.team1TurnScores, team2TurnScores: gameState.team2TurnScores)
                             
                             // Words per minute table (compact version for horizontal layout)
                             WordsPerMinuteTable(
@@ -162,7 +162,7 @@ struct GameOverView: View {
                             }
                             
                             // Score progression chart
-                            ScoreProgressionChart(scoreHistory: gameState.scoreHistory)
+                            ScoreProgressionChart(team1TurnScores: gameState.team1TurnScores, team2TurnScores: gameState.team2TurnScores)
                             
                             // Words per minute table
                             WordsPerMinuteTable(

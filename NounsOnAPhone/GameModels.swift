@@ -85,12 +85,15 @@ class GameState: ObservableObject {
     @Published var timeSpentByWord: [UUID: Int] = [:] // Track time spent on each word by ID
     
     // New analytics tracking
-    @Published var scoreHistory: [(turn: Int, team1Score: Int, team2Score: Int)] = []
+    @Published var team1TurnScores: [Int] = [0] // Always start with 0
+    @Published var team2TurnScores: [Int] = [0] // Always start with 0
     @Published var roundStats: [RoundType: (team1Time: Int, team2Time: Int, team1Correct: Int, team2Correct: Int)] = [:]
     @Published var currentRoundStartTime: Date?
     @Published var currentTeamStartTime: Date?
     @Published var teamTurnCount: [Int: Int] = [1: 0, 2: 0] // Track how many turns each team has taken
-
+    
+    // Track each team's cumulative scores by turn
+    // Remove team1Scores and team2Scores
     // Add this flag to prevent double-counting turn time
     private var turnTimeAlreadyAdded: Bool = false
     private var timer: Timer?
@@ -222,6 +225,9 @@ class GameState: ObservableObject {
             }
             turnTimeAlreadyAdded = true
         }
+        // Record score at the end of the team turn (timer expired)
+        print("[DEBUG] Timer expired for Team \(currentTeam) - recording turn score")
+        recordTeamTurnScore()
         
         // If there are still words left, switch teams and continue the round
         if !unusedWords.isEmpty {
@@ -243,8 +249,7 @@ class GameState: ObservableObject {
     
     // Call this when the user presses 'Continue' on the transition screen
     func advanceTeamOrRound(wordsExhausted: Bool = false) {
-        // Record score history when teams switch or round advances
-        recordScoreHistory()
+        // Do NOT record score here - scores are only recorded at the true end of a team's turn
         
         if wordsExhausted || (currentRound != .oneWord && roundUsedWordIds.count >= words.count) {
             // If we're in the last round and words are exhausted, end the game
@@ -330,10 +335,17 @@ class GameState: ObservableObject {
                 }
                 turnTimeAlreadyAdded = true
             }
+            // Only record score if this is the very end of the game
+            if currentRound == .oneWord {
+                print("[DEBUG] Game ending, recording final team score.")
+                recordTeamTurnScore()
+            } else {
+                print("[DEBUG] Round ended early, NOT recording team score (will record at timerExpired).")
+            }
             
             if currentRound == .oneWord {
                 // Record final score history when game ends
-                recordScoreHistory()
+                // Remove buildScoreHistory and all references to team1Scores/team2Scores
                 currentPhase = .gameOver
                 soundManager.handleGamePhaseChange(to: .gameOver)
             } else {
@@ -391,7 +403,9 @@ class GameState: ObservableObject {
         currentRound = .describe
         timeRemaining = timerDuration
         roundUsedWordIds.removeAll()
-        scoreHistory.removeAll()
+        team1TurnScores = [0]
+        team2TurnScores = [0]
+        print("[DEBUG] Reset scores. team1TurnScores: \(team1TurnScores), team2TurnScores: \(team2TurnScores)")
         roundStats.removeAll()
         currentRoundStartTime = nil
         currentTeamStartTime = nil
@@ -456,11 +470,19 @@ class GameState: ObservableObject {
     
     // MARK: - Analytics Helper Methods
     
-    private func recordScoreHistory() {
-        // Record score history when teams switch or at game end
-        let turnNumber = scoreHistory.count + 1
-        scoreHistory.append((turn: turnNumber, team1Score: team1Score, team2Score: team2Score))
+    // When a team's turn ends, append their new cumulative score
+    private func recordTeamTurnScore() {
+        print("[DEBUG] Recording team \(currentTeam) score at end of turn. Round: \(currentRound), Score: \(currentTeam == 1 ? team1Score : team2Score)")
+        if currentTeam == 1 {
+            team1TurnScores.append(team1Score)
+            print("[DEBUG] Team 1 turn ended. Appended score: \(team1Score). team1TurnScores: \(team1TurnScores)")
+        } else {
+            team2TurnScores.append(team2Score)
+            print("[DEBUG] Team 2 turn ended. Appended score: \(team2Score). team2TurnScores: \(team2TurnScores)")
+        }
     }
+    
+    // Remove buildScoreHistory and all references to team1Scores/team2Scores
     
     struct WordsPerMinuteData {
         let round: RoundType
