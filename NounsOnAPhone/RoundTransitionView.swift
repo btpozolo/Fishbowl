@@ -242,7 +242,7 @@ struct RoundTransitionView: View {
         if gameState.lastTransitionReason == .timerExpired {
             return "Team \(gameState.currentTeam == 1 ? 2 : 1) ran out of time"
         } else {
-            return "Team \(gameState.currentTeam) completed all words with \(formatTime(gameState.timeRemaining)) remaining!"
+            return "Completed with \(formatTime(gameState.timeRemaining)) left!"
         }
     }
     
