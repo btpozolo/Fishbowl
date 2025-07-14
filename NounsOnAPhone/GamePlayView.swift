@@ -11,28 +11,14 @@ struct GamePlayView: View {
                     // Main column: Team/Round info, Word card, Correct button
                     VStack(spacing: 32) {
                         // Top: Team and round info on same line
-                        HStack {
-                            Text("Team ")
-                                .font(.title2)
+                        HStack(spacing: 4) {
+                            Text("Round \(gameState.currentRound.rawValue)")
+                                .font(.title3)
                                 .foregroundColor(.primary)
-                            
-                            Text("\(gameState.currentTeam)")
-                                .font(.title2)
+                            Text(": \(gameState.currentRound.shortDescription)")
+                                .font(.title3)
                                 .fontWeight(.bold)
                                 .foregroundColor(.primary)
-                            
-                            Text(" • Round ")
-                                .font(.title2)
-                                .foregroundColor(.primary)
-                            
-                            Text("\(gameState.currentRound.rawValue)")
-                                .font(.title2)
-                                .foregroundColor(.primary)
-                            
-                            Text(": \(gameState.currentRound.shortDescription)")
-                                .font(.title2)
-                                .foregroundColor(.secondary)
-                            
                             Spacer()
                         }
                         .padding(.top, 20)
@@ -152,16 +138,13 @@ struct GamePlayView: View {
                         // Team and round info
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Team \(gameState.currentTeam)")
-                                    .font(.title2)
+                                Text("Round \(gameState.currentRound.rawValue)")
+                                    .font(.title)
                                     .fontWeight(.bold)
                                     .foregroundColor(.primary)
-                                Text("Round \(gameState.currentRound.rawValue)")
+                                Text(gameState.currentRound.shortDescription)
                                     .font(.title3)
                                     .foregroundColor(.primary)
-                                Text(gameState.currentRound.shortDescription)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
                             }
                             Spacer()
                             // Timer with enhanced design
