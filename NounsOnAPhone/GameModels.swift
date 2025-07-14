@@ -92,6 +92,9 @@ class GameState: ObservableObject {
     @Published var currentTeamStartTime: Date?
     @Published var teamTurnCount: [Int: Int] = [1: 0, 2: 0] // Track how many turns each team has taken
     
+    // Track when each team started each round (for accurate WPM calculation)
+    private var teamRoundStartTimes: [Int: [RoundType: Date]] = [1: [:], 2: [:]]
+    
     // Track each team's cumulative scores by turn
     // Remove team1Scores and team2Scores
     // Add this flag to prevent double-counting turn time
@@ -170,6 +173,12 @@ class GameState: ObservableObject {
         }
         // Set currentTeamStartTime at the start of each turn
         currentTeamStartTime = Date()
+        
+        // Track when this team started this round (for accurate WPM calculation)
+        if teamRoundStartTimes[currentTeam]?[currentRound] == nil {
+            teamRoundStartTimes[currentTeam]?[currentRound] = Date()
+        }
+        
         // Reset the flag at the start of each turn
         turnTimeAlreadyAdded = false
     }
@@ -215,16 +224,8 @@ class GameState: ObservableObject {
             timeSpentByWord[currentWord.id, default: 0] += adjustedTimeSpent
         }
         
-        // At the END of the team's turn (timer expired), add total turn time to teamXTime, but only if not already added
-        if !turnTimeAlreadyAdded, let teamStartTime = currentTeamStartTime {
-            let teamTimeSpent = Int(Date().timeIntervalSince(teamStartTime))
-            if currentTeam == 1 {
-                roundStats[currentRound]?.team1Time += teamTimeSpent
-            } else {
-                roundStats[currentRound]?.team2Time += teamTimeSpent
-            }
-            turnTimeAlreadyAdded = true
-        }
+        // At the END of the team's turn (timer expired), record time for current round
+        recordTimeForCurrentRound()
         // Record score at the end of the team turn (timer expired)
         print("[DEBUG] Timer expired for Team \(currentTeam) - recording turn score")
         recordTeamTurnScore()
@@ -258,6 +259,10 @@ class GameState: ObservableObject {
                 soundManager.handleGamePhaseChange(to: .gameOver)
                 return
             }
+            
+            // Before advancing to next round, record time for current round
+            recordTimeForCurrentRound()
+            
             // Advance to next round, same team continues, keep remaining time
             switch currentRound {
             case .describe:
@@ -325,16 +330,8 @@ class GameState: ObservableObject {
         if unusedWords.isEmpty {
             stopTimer()
             
-            // At the END of the team's turn (round ends), add total turn time to teamXTime, but only if not already added
-            if !turnTimeAlreadyAdded, let teamStartTime = currentTeamStartTime {
-                let teamTimeSpent = Int(Date().timeIntervalSince(teamStartTime))
-                if currentTeam == 1 {
-                    roundStats[currentRound]?.team1Time += teamTimeSpent
-                } else {
-                    roundStats[currentRound]?.team2Time += teamTimeSpent
-                }
-                turnTimeAlreadyAdded = true
-            }
+            // At the END of the team's turn (round ends), record time for current round
+            recordTimeForCurrentRound()
             // Only record score if this is the very end of the game
             if currentRound == .oneWord {
                 print("[DEBUG] Game ending, recording final team score.")
@@ -410,6 +407,7 @@ class GameState: ObservableObject {
         currentRoundStartTime = nil
         currentTeamStartTime = nil
         teamTurnCount = [1: 0, 2: 0]
+        teamRoundStartTimes = [1: [:], 2: [:]]
     }
     
     func resetGame() {
@@ -469,6 +467,25 @@ class GameState: ObservableObject {
     }
     
     // MARK: - Analytics Helper Methods
+    
+    // Record time spent by current team in current round
+    private func recordTimeForCurrentRound() {
+        guard !turnTimeAlreadyAdded else { return }
+        
+        if let roundStartTime = teamRoundStartTimes[currentTeam]?[currentRound] {
+            let timeSpentInRound = Int(Date().timeIntervalSince(roundStartTime))
+            
+            if currentTeam == 1 {
+                roundStats[currentRound]?.team1Time += timeSpentInRound
+            } else {
+                roundStats[currentRound]?.team2Time += timeSpentInRound
+            }
+            
+            // Reset the round start time for this team/round since we recorded the time
+            teamRoundStartTimes[currentTeam]?[currentRound] = Date()
+            turnTimeAlreadyAdded = true
+        }
+    }
     
     // When a team's turn ends, append their new cumulative score
     private func recordTeamTurnScore() {
