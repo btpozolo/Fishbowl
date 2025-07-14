@@ -35,18 +35,19 @@ struct ScoreProgressionChart: View {
                 )
             } else {
                 HStack(alignment: .center, spacing: 0) {
-                    // Y-axis label
+                    // Y-axis label - centered vertically
                     VStack {
+                        Spacer()
                         Text("Scores")
                             .font(.caption)
+                            .fontWeight(.bold)
                             .foregroundColor(.secondary)
                             .rotationEffect(.degrees(-90))
                             .frame(width: 60, height: 20)
-                            .padding(.bottom, 24)
-                            .offset(x: -18) // Move further left
+                            .offset(x: -25) // Move further left for better spacing
                         Spacer()
                     }
-                    .frame(width: 28)
+                    .frame(width: 35)
                     // Chart
                     VStack(spacing: 0) {
                         ChartView(team1TurnScores: team1TurnScores, team2TurnScores: team2TurnScores)
@@ -59,6 +60,7 @@ struct ScoreProgressionChart: View {
                         // X-axis label
                         Text("Turn")
                             .font(.caption)
+                            .fontWeight(.bold)
                             .foregroundColor(.secondary)
                             .padding(.top, 24) // Move further down
                     }
@@ -143,8 +145,8 @@ struct GridLines: View {
                     .frame(width: 1)
                     .position(x: x, y: size.height / 2)
             }
-            // Horizontal grid lines (scores)
-            ForEach(0...maxScore, id: \.self) { score in
+            // Horizontal grid lines (scores) - every 5 points
+            ForEach(Array(stride(from: 0, through: maxScore, by: 5)), id: \.self) { score in
                 let y = size.height - (CGFloat(score) / CGFloat(maxScore)) * size.height
                 Rectangle()
                     .fill(Color(.systemGray5))
@@ -220,14 +222,14 @@ struct AxisLabels: View {
     
     var body: some View {
         ZStack {
-            // Y-axis labels (scores)
-            ForEach(0...maxScore, id: \.self) { score in
+            // Y-axis labels (scores) - every 5 points
+            ForEach(Array(stride(from: 0, through: maxScore, by: 5)), id: \.self) { score in
                 let y = size.height - (CGFloat(score) / CGFloat(maxScore)) * size.height
                 Text("\(score)")
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .frame(width: 30, alignment: .trailing)
-                    .position(x: -28, y: y) // moved further left
+                    .position(x: -35, y: y) // moved further left for better spacing
             }
             // X-axis labels (turns)
             ForEach(0...maxTurn, id: \.self) { turn in
