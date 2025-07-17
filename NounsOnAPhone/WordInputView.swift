@@ -80,13 +80,15 @@ struct WordInputView: View {
                     // Add 5 Words button
                     GameButton.primary(
                         title: "Add 5 Words",
-                        icon: "wand.and.stars"
+                        icon: "wand.and.stars",
+                        size: .large
                     ) {
                         withAnimation(.spring(response: 0.6)) {
                             gameState.addSampleWords(count: 5)
                         }
                     }
                     .animation(.spring(response: 0.3), value: gameState.words.count)
+                    .frame(maxWidth: 400)
                     // Start game button
                     if gameState.canStartGame() {
                         GameButton.success(
@@ -111,30 +113,97 @@ struct WordInputView: View {
                     }
                 }
                 .padding(.horizontal, 8)
-                .padding(.bottom, keyboardHeight > 0 ? 20 : geometry.safeAreaInsets.bottom + 12) // test this fixed the word input issue
+                .padding(.bottom, keyboardHeight > 0 ? 20 : geometry.safeAreaInsets.bottom + 12)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemGroupedBackground))
             .sheet(isPresented: $showInfoSheet) {
-                VStack(spacing: 24) {
-                    HStack {
-                        Spacer()
-                        Button(action: { showInfoSheet = false }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title)
-                                .foregroundColor(.secondary)
+                NavigationView {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 24) {
+                            // Header
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Adding Words")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.primary)
+                                
+                                Text("Enter nouns that everyone in your group will recognize")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            // Word Guidelines
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                        .font(.title3)
+                                    Text("What to include")
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("• Common nouns (dog, car, pizza)")
+                                    Text("• Proper nouns (Disney, iPhone, Taylor Swift)")
+                                    Text("• Places, objects, animals, foods")
+                                    Text("• Things everyone in your group knows")
+                                }
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                            }
+                            
+                            // Recommendations
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    Image(systemName: "person.3.fill")
+                                        .foregroundColor(.blue)
+                                        .font(.title3)
+                                    Text("Recommended amount")
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                }
+                                
+                                Text("Aim for **3-5 words per person** in your group. This ensures everyone gets a good variety of words to guess while keeping the game length manageable.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                            }
+                            
+                            // Tips
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    Image(systemName: "lightbulb.fill")
+                                        .foregroundColor(.orange)
+                                        .font(.title3)
+                                    Text("Tips")
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("• Mix easy and challenging words")
+                                    Text("• Consider your group's interests")
+                                    Text("• Avoid words that might be offensive")
+                                    Text("• Use the 'Add 5 Words' button for quick testing")
+                                }
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                            }
+                            
+                            Spacer(minLength: 20)
+                        }
+                        .padding(20)
+                    }
+                    .navigationTitle("Word Guidelines")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Done") {
+                                showInfoSheet = false
+                            }
                         }
                     }
-                    .padding([.top, .trailing])
-                    Image(systemName: "info.circle.fill")
-                        .font(.system(size: 48))
-                        .foregroundColor(.blue)
-                    Text("Enter any noun (including proper nouns). Just make sure it’s a word the whole group is likely to know!")
-                        .font(.title3)
-                        .foregroundColor(.primary)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    Spacer()
                 }
                 .presentationDetents([.medium, .large])
             }
