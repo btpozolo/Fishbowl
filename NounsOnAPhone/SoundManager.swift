@@ -154,7 +154,7 @@ class SoundManager: ObservableObject {
         switch phase {
         case .playing:
             startBackgroundMusic()
-        case .roundTransition, .gameOver, .setup, .wordInput, .gameOverview:
+        case .roundTransition, .gameOver, .setup, .setupView, .wordInput, .gameOverview:
             stopBackgroundMusic()
         }
     }

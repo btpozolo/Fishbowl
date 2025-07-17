@@ -22,8 +22,14 @@ struct ContentView: View {
                 // Use old phase-based navigation for actual gameplay
                 Group {
                     switch gameState.currentPhase {
+                    case .setupView:
+                        NavigationStack {
+                            SetupView(gameState: gameState)
+                        }
                     case .wordInput:
-                        WordInputView(gameState: gameState)
+                        NavigationStack {
+                            WordInputView(gameState: gameState)
+                        }
                     case .gameOverview:
                         GameOverviewView(gameState: gameState)
                     case .playing:
@@ -39,7 +45,7 @@ struct ContentView: View {
                 }
                 .onChange(of: gameState.currentPhase) { oldPhase, newPhase in
                     switch newPhase {
-                    case .setup, .wordInput, .gameOver:
+                    case .setup, .setupView, .wordInput, .gameOver:
                         OrientationManager.shared.lock(to: .portrait)
                     case .playing, .roundTransition, .gameOverview:
                         OrientationManager.shared.lock(to: [.portrait, .landscapeLeft, .landscapeRight])
@@ -47,7 +53,7 @@ struct ContentView: View {
                 }
                 .onAppear {
                     switch gameState.currentPhase {
-                    case .setup, .wordInput, .gameOver:
+                    case .setup, .setupView, .wordInput, .gameOver:
                         OrientationManager.shared.lock(to: .portrait)
                     case .playing, .roundTransition, .gameOverview:
                         OrientationManager.shared.lock(to: [.portrait, .landscapeLeft, .landscapeRight])

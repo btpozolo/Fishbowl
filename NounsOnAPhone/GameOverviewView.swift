@@ -3,234 +3,122 @@ import SwiftUI
 struct GameOverviewView: View {
     @ObservedObject var gameState: GameState
     
+    // Extracted background gradient
+    private var backgroundGradient: LinearGradient {
+        LinearGradient(
+            gradient: Gradient(colors: [Color(red: 0.22, green: 0.60, blue: 0.98), Color(red: 0.20, green: 0.98, blue: 0.98)]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+    
+    // Extracted card background style
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 20)
+            .fill(Color.white.opacity(0.35))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+            )
+    }
+    
     var body: some View {
-        GeometryReader { geometry in
-            if geometry.size.width > geometry.size.height {
-                // Horizontal layout - REFACTORED
-                VStack(spacing: 0) {
-                    VStack(spacing: 20) {
-                        // Header row: Title left, Timer right
-                        HStack(alignment: .top) {
-                            Text("Fishbowl")
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundColor(.primary)
-                                .multilineTextAlignment(.leading)
-                            
-                            Spacer()
-                            
-                            HStack(spacing: 8) {
-                                Image(systemName: "timer")
-                                    .font(.title2)
-                                    .foregroundColor(.accentColor)
-                                Text("\(gameState.timerDuration) seconds per team")
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color.accentColor.opacity(0.1))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .stroke(Color.accentColor.opacity(0.2), lineWidth: 1)
-                                    )
-                            )
-                        }
-                        .padding(.top, 20)
-                        .padding(.horizontal, 8)
-
-                        // Round descriptions in horizontal layout, more space, no text cut off
-                        HStack(spacing: 16) {
-                            ForEach(RoundType.allCases, id: \.rawValue) { round in
-                                HorizontalRoundDescriptionCard(round: round)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 210) // Fixed height for all cards
-                            }
-                        }
+        ZStack {
+            backgroundGradient
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // Header section
+                VStack(spacing: 16) {
+                    
+                    // Title and subtitle
+                    VStack(spacing: 8) {
+                        Text("Game Overview")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
                         
-                        // Button pinned above safe area
-                        GameButton.success(
-                            title: "Ready to Begin!",
-                            icon: "play.circle.fill",
-                            size: .large
-                        ) {
-                            withAnimation(.spring(response: 0.6)) {
-                                gameState.beginRound()
-                            }
-                        }
-                        
+                        Text("\(gameState.words.count) words ready to play!")
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.8))
+                            .multilineTextAlignment(.center)
                     }
-                    .padding(.horizontal, 12)
-                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
-                    .frame(maxHeight: .infinity, alignment: .top)
-
-
                 }
-                .ignoresSafeArea(.keyboard)
-            } else {
-                // Vertical layout (original)
-                ZStack(alignment: .bottom) {
-                    VStack(spacing: 24) {
-                        // Header with improved styling
-                        VStack(spacing: 12) {
-                            Text("Fishbowl")
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundColor(.primary)
-                                .multilineTextAlignment(.center)
-                            
-                            Text("\(gameState.words.count) words ready to play!")
-                                .font(.title3)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                            
-                            // Timer duration info with enhanced design
+                .padding(.top, 20)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+                
+                // Main content area
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Timer info card
+                        VStack(spacing: 16) {
                             HStack(spacing: 12) {
                                 Image(systemName: "timer")
                                     .font(.title2)
-                                    .foregroundColor(.accentColor)
+                                    .foregroundColor(.white)
                                 
                                 Text("\(gameState.timerDuration) seconds per team")
                                     .font(.headline)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(.white)
+                                    .fontWeight(.semibold)
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color.accentColor.opacity(0.1))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .stroke(Color.accentColor.opacity(0.2), lineWidth: 1)
-                                    )
-                            )
                         }
-                        .padding(.top, 20)
+                        .padding(12)
+                        .frame(maxWidth: .infinity)
+                        .background(cardBackground)
+                        .padding(.horizontal, 20)
                         
-                        // Round descriptions with improved card design
+                        // Round descriptions
                         VStack(spacing: 16) {
                             ForEach(RoundType.allCases, id: \.rawValue) { round in
-                                VerticalRoundDescriptionCard(round: round)
+                                RoundDescriptionCard(round: round)
                             }
                         }
+                        .padding(.horizontal, 20)
                         
-                        Spacer()
-                        
-                        // Button pinned above safe area
-                        GameButton.success(
-                            title: "Ready to Begin!",
-                            icon: "play.circle.fill",
-                            size: .large
-                        ) {
-                            withAnimation(.spring(response: 0.6)) {
-                                gameState.beginRound()
-                            }
-                        }
+                        Spacer(minLength: 100)
                     }
-                    .padding(.horizontal, 20)
-                    .frame(maxHeight: .infinity, alignment: .top)
-                
+                    .padding(.top, 20)
                 }
-                .ignoresSafeArea(.keyboard)
+                
+                // Ready to Begin button
+                Button(action: {
+                    withAnimation(.spring(response: 0.6)) {
+                        gameState.beginRound()
+                    }
+                }) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "play.circle.fill")
+                            .font(.title2)
+                        Text("Ready to Begin!")
+                            .font(.system(size: 18, weight: .bold))
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color(red: 0.22, green: 0.60, blue: 0.98))
+                    .cornerRadius(16)
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
         }
-        .background(Color(.systemGroupedBackground))
+        .onAppear {
+            OrientationManager.shared.lock(to: .portrait)
+        }
+        .onDisappear {
+            OrientationManager.shared.lock(to: [.portrait, .landscapeLeft, .landscapeRight])
+        }
     }
 }
 
-// MARK: - Horizontal Card
-struct HorizontalRoundDescriptionCard: View {
+// MARK: - Round Description Card
+struct RoundDescriptionCard: View {
     let round: RoundType
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(roundColor)
-                        .frame(width: 40, height: 40)
-                    Text("\(round.rawValue)")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                }
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(round.title)
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text(round.description)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            if round == .oneWord {
-                Spacer() // Push content to top only for one word round
-            }
-            HStack {
-                Image(systemName: roundIcon)
-                    .font(.title3)
-                    .foregroundColor(roundColor)
-                Text(roundTip)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .multilineTextAlignment(.leading)
-                Spacer()
-            }
-            
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(roundColor.opacity(0.1))
-            )
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-        )
-    }
-    private var roundColor: Color {
-        switch round {
-        case .describe:
-            return .blue
-        case .actOut:
-            return .orange
-        case .oneWord:
-            return .purple
-        }
-    }
-    private var roundIcon: String {
-        switch round {
-        case .describe:
-            return "text.bubble"
-        case .actOut:
-            return "person.fill"
-        case .oneWord:
-            return "1.circle"
-        }
-    }
-    private var roundTip: String {
-        switch round {
-        case .describe:
-            return "Use descriptions, synonyms, or related words"
-        case .actOut:
-            return "Use gestures, facial expressions, and body language"
-        case .oneWord:
-            return "Only one word allowed - choose carefully!"
-        }
-    }
-}
-// MARK: - Vertical Card
-struct VerticalRoundDescriptionCard: View {
-    let round: RoundType
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
@@ -241,27 +129,28 @@ struct VerticalRoundDescriptionCard: View {
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                 }
+                
                 VStack(alignment: .leading, spacing: 4) {
                     Text(round.title)
                         .font(.headline)
-                        .foregroundColor(.primary)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .foregroundColor(.black)
+                        .fontWeight(.semibold)
                     Text(round.description)
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.black.opacity(0.8))
                         .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            
             HStack {
                 Image(systemName: roundIcon)
                     .font(.title3)
                     .foregroundColor(roundColor)
                 Text(roundTip)
                     .font(.caption)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundColor(.black.opacity(0.7))
+                    .multilineTextAlignment(.leading)
                 Spacer()
             }
             .padding(.horizontal, 16)
@@ -271,13 +160,18 @@ struct VerticalRoundDescriptionCard: View {
                     .fill(roundColor.opacity(0.1))
             )
         }
-        .padding(16)
+        .padding(24)
+        .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.white.opacity(0.35))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                )
         )
     }
+    
     private var roundColor: Color {
         switch round {
         case .describe:
@@ -288,6 +182,7 @@ struct VerticalRoundDescriptionCard: View {
             return .purple
         }
     }
+    
     private var roundIcon: String {
         switch round {
         case .describe:
@@ -298,6 +193,7 @@ struct VerticalRoundDescriptionCard: View {
             return "1.circle"
         }
     }
+    
     private var roundTip: String {
         switch round {
         case .describe:
@@ -311,9 +207,5 @@ struct VerticalRoundDescriptionCard: View {
 }
 
 #Preview {
-    GameOverviewView(gameState: GameState())
-}
-
-#Preview("Landscape", traits: .landscapeLeft) {
     GameOverviewView(gameState: GameState())
 }

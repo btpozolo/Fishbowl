@@ -17,6 +17,7 @@ struct Word: Identifiable, Hashable {
 
 enum GamePhase {
     case setup
+    case setupView
     case wordInput
     case gameOverview
     case playing
@@ -108,6 +109,10 @@ class GameState: ObservableObject {
     // MARK: - Setup Phase
     func proceedToWordInput() {
         currentPhase = .wordInput
+    }
+    
+    func goToSetupView() {
+        currentPhase = .setupView
     }
     
     // MARK: - Word Input Phase
