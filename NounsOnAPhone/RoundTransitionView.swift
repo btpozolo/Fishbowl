@@ -23,15 +23,11 @@ struct RoundTransitionView: View {
                     VStack(spacing: 8) {
                         // Team info
                         VStack(spacing: 8) {
-                            Text(nextTeamTitle)
-                                .font(.headline)
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 4)
-                                .background(
-                                    Capsule()
-                                        .fill(Color(.systemGray6))
-                                )
+                                                    Text(nextTeamTitle)
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
                             Text("Team \(nextTeamNumber)")
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
                                 .foregroundColor(.accentColor)
@@ -39,12 +35,12 @@ struct RoundTransitionView: View {
                                 .animation(.spring(response: 0.6, dampingFraction: 0.8), value: nextTeamNumber)
                         }
                         // Time remaining (if applicable)
-                        if gameState.lastTransitionReason == .wordsExhausted && gameState.timeRemaining > 0 {
+                        if gameState.roundManager.lastTransitionReason == .wordsExhausted && gameState.timerManager.timeRemaining > 0 {
                             HStack(spacing: 6) {
                                 Image(systemName: "clock")
                                     .font(.title3)
                                     .foregroundColor(.orange)
-                                Text("Time remaining: \(formatTime(gameState.timeRemaining))")
+                                Text("Time remaining: \(formatTime(gameState.timerManager.timeRemaining))")
                                     .font(.headline)
                                     .foregroundColor(.orange)
                             }
@@ -75,10 +71,6 @@ struct RoundTransitionView: View {
                         .foregroundColor(.secondary)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(.systemGray6))
-                        )
                     }
                     .padding(.bottom, 8)
                     
@@ -112,7 +104,7 @@ struct RoundTransitionView: View {
                                 .foregroundColor(statusColor)
                         }
                         .scaleEffect(1.0)
-                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: gameState.timeRemaining)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: gameState.timerManager.timeRemaining)
                         
                         VStack(spacing: 12) {
                             Text(transitionTitle)
@@ -138,10 +130,6 @@ struct RoundTransitionView: View {
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
-                            .background(
-                                Capsule()
-                                    .fill(Color(.systemGray6))
-                            )
                         
                         // Team number without circle
                         Text("Team \(nextTeamNumber)")
@@ -151,13 +139,13 @@ struct RoundTransitionView: View {
                             .animation(.spring(response: 0.6, dampingFraction: 0.8), value: nextTeamNumber)
                         
                         // Time remaining info (if applicable)
-                        if gameState.lastTransitionReason == .wordsExhausted && gameState.timeRemaining > 0 {
+                        if gameState.roundManager.lastTransitionReason == .wordsExhausted && gameState.timerManager.timeRemaining > 0 {
                             HStack(spacing: 8) {
                                 Image(systemName: "clock")
                                     .font(.title3)
                                     .foregroundColor(.orange)
                                 
-                                Text("Time remaining: \(formatTime(gameState.timeRemaining))")
+                                Text("Time remaining: \(formatTime(gameState.timerManager.timeRemaining))")
                                     .font(.headline)
                                     .foregroundColor(.orange)
                             }
@@ -196,10 +184,6 @@ struct RoundTransitionView: View {
                         .foregroundColor(.secondary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(.systemGray6))
-                        )
                     }
                     .padding(.bottom, 12)
                     
@@ -218,7 +202,19 @@ struct RoundTransitionView: View {
                 }
             }
         }
-        .background(Color(.systemGroupedBackground))
+        //.background(Color(.systemGroupedBackground))
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(red: 0.22, green: 0.60, blue: 0.98).opacity(0.5),
+                    Color(red: 0.20, green: 0.98, blue: 0.98).opacity(0.5)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        )
+        
         .sheet(isPresented: $showingSoundSettings) {
             SoundSettingsView()
         }
@@ -231,23 +227,23 @@ struct RoundTransitionView: View {
     }
     
     private var transitionTitle: String {
-        if gameState.lastTransitionReason == .timerExpired {
+        if gameState.roundManager.lastTransitionReason == .timerExpired {
             return "Time's Up!"
         } else {
-            return "Round \(gameState.currentRound.rawValue) Complete!"
+            return "Round \(gameState.roundManager.currentRound.rawValue) Complete!"
         }
     }
     
     private var transitionMessage: String {
-        if gameState.lastTransitionReason == .timerExpired {
-            return "Team \(gameState.currentTeam == 1 ? 2 : 1) ran out of time"
+        if gameState.roundManager.lastTransitionReason == .timerExpired {
+            return "Team \(gameState.roundManager.currentTeam == 1 ? 2 : 1) ran out of time"
         } else {
-            return "Completed with \(formatTime(gameState.timeRemaining)) left!"
+            return "Completed with \(formatTime(gameState.timerManager.timeRemaining)) left!"
         }
     }
     
     private var nextTeamTitle: String {
-        if gameState.lastTransitionReason == .timerExpired {
+        if gameState.roundManager.lastTransitionReason == .timerExpired {
             return "Next Up:"
         } else {
             return "Same Team Continues:"
@@ -255,15 +251,15 @@ struct RoundTransitionView: View {
     }
     
     private var nextTeamNumber: Int {
-        if gameState.lastTransitionReason == .timerExpired {
-            return gameState.currentTeam
+        if gameState.roundManager.lastTransitionReason == .timerExpired {
+            return gameState.roundManager.currentTeam
         } else {
-            return gameState.currentTeam
+            return gameState.roundManager.currentTeam
         }
     }
     
     private var nextTeamMessage: String {
-        if gameState.lastTransitionReason == .timerExpired {
+        if gameState.roundManager.lastTransitionReason == .timerExpired {
             return "Get ready to play!"
         } else {
             return "Continue with remaining time!"
@@ -271,7 +267,7 @@ struct RoundTransitionView: View {
     }
     
     private var continueButtonText: String {
-        if gameState.lastTransitionReason == .timerExpired {
+        if gameState.roundManager.lastTransitionReason == .timerExpired {
             return "Pass Phone to Next Team"
         } else {
             return "Continue to Next Round"
@@ -279,7 +275,7 @@ struct RoundTransitionView: View {
     }
     
     private var statusIcon: String {
-        if gameState.lastTransitionReason == .timerExpired {
+        if gameState.roundManager.lastTransitionReason == .timerExpired {
             return "clock.badge.exclamationmark"
         } else {
             return "checkmark.circle.fill"
@@ -287,8 +283,8 @@ struct RoundTransitionView: View {
     }
     
     private var statusColor: Color {
-        if gameState.lastTransitionReason == .timerExpired {
-            return .red
+        if gameState.roundManager.lastTransitionReason == .timerExpired {
+            return .black
         } else {
             return .green
         }
@@ -313,10 +309,10 @@ struct RoundTransitionView: View {
     let sampleGameState = GameState()
     sampleGameState.addSampleWords()
     sampleGameState.currentPhase = .roundTransition
-    sampleGameState.currentRound = .describe
-    sampleGameState.currentTeam = 2 // Team 2's turn next
-    sampleGameState.lastTransitionReason = .timerExpired
-    sampleGameState.timeRemaining = 60 // Full timer for new team
+    sampleGameState.roundManager.currentRound = .describe
+    sampleGameState.roundManager.currentTeam = 2 // Team 2's turn next
+    sampleGameState.roundManager.lastTransitionReason = .timerExpired
+    sampleGameState.timerManager.timeRemaining = 60 // Full timer for new team
     return RoundTransitionView(gameState: sampleGameState)
 }
 

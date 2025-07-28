@@ -35,7 +35,7 @@ struct SetupView: View {
                 
                 Spacer()
                 
-                Text("\(gameState.timerDuration)s")
+                Text("\(gameState.timerManager.timerDuration)s")
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
@@ -48,8 +48,8 @@ struct SetupView: View {
             VStack(spacing: 12) {
                 Slider(
                     value: Binding(
-                        get: { Double(gameState.timerDuration) },
-                        set: { gameState.timerDuration = Int($0) }
+                        get: { Double(gameState.timerManager.timerDuration) },
+                        set: { gameState.timerManager.updateTimerDuration(Int($0)) }
                     ),
                     in: 10...120,
                     step: 5
@@ -74,18 +74,18 @@ struct SetupView: View {
                 ForEach([30, 60, 90], id: \.self) { duration in
                     Button(action: {
                         withAnimation(.spring(response: 0.3)) {
-                            gameState.timerDuration = duration
+                            gameState.timerManager.updateTimerDuration(duration)
                         }
                     }) {
                         Text("\(duration)s")
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(gameState.timerDuration == duration ? .white : Color(red: 0.22, green: 0.60, blue: 0.98))
+                            .foregroundColor(gameState.timerManager.timerDuration == duration ? .white : Color(red: 0.22, green: 0.60, blue: 0.98))
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .fill(gameState.timerDuration == duration ? Color(red: 0.22, green: 0.60, blue: 0.98) : Color(red: 0.22, green: 0.60, blue: 0.98).opacity(0.1))
+                                    .fill(gameState.timerManager.timerDuration == duration ? Color(red: 0.22, green: 0.60, blue: 0.98) : Color(red: 0.22, green: 0.60, blue: 0.98).opacity(0.1))
                             )
                     }
                 }

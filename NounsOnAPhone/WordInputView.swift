@@ -116,6 +116,7 @@ struct WordInputView: View {
                             .background(Color.white)
                             .cornerRadius(16)
                         }
+                        .buttonStyle(AddWordsButtonStyle())
                         .padding(.horizontal, 20)
                         
                         // Start game button
@@ -334,6 +335,16 @@ struct CustomTextFieldStyle: TextFieldStyle {
             )
             .font(.body)
             .foregroundColor(.black)
+    }
+}
+
+// Custom button style for Add 5 Words button
+struct AddWordsButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .animation(.spring(response: 0.2), value: configuration.isPressed)
     }
 }
 

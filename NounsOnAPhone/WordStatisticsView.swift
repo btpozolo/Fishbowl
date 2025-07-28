@@ -29,12 +29,14 @@ struct WordStatisticsView: View {
                     .fontWeight(.semibold)
                     .foregroundColor(.secondary)
                     .frame(width: 60, alignment: .center)
+                    .padding(.horizontal, 8)
                 
                 Text("Avg Time")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.secondary)
                     .frame(width: 80, alignment: .center)
+                    .padding(.horizontal, 8)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)

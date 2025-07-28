@@ -70,18 +70,18 @@ struct GameOverView: View {
                         VStack(spacing: 16) {
                             FinalScoreCard(
                                 teamNumber: 1,
-                                score: gameState.team1Score,
+                                score: gameState.scoreManager.team1Score,
                                 isWinner: gameState.getWinner() == 1
                             )
                             
                             FinalScoreCard(
                                 teamNumber: 2,
-                                score: gameState.team2Score,
+                                score: gameState.scoreManager.team2Score,
                                 isWinner: gameState.getWinner() == 2
                             )
                             
                             // Score progression chart (compact version for horizontal layout)
-                            ScoreProgressionChart(team1TurnScores: gameState.team1TurnScores, team2TurnScores: gameState.team2TurnScores)
+                            ScoreProgressionChart(team1TurnScores: gameState.scoreManager.team1TurnScores, team2TurnScores: gameState.scoreManager.team2TurnScores)
                             
                             // Words per minute table (compact version for horizontal layout)
                             WordsPerMinuteTable(
@@ -149,20 +149,20 @@ struct GameOverView: View {
                                 HStack(spacing: 16) {
                                     FinalScoreCard(
                                         teamNumber: 1,
-                                        score: gameState.team1Score,
+                                        score: gameState.scoreManager.team1Score,
                                         isWinner: gameState.getWinner() == 1
                                     )
                                     
                                     FinalScoreCard(
                                         teamNumber: 2,
-                                        score: gameState.team2Score,
+                                        score: gameState.scoreManager.team2Score,
                                         isWinner: gameState.getWinner() == 2
                                     )
                                 }
                             }
                             
                             // Score progression chart
-                            ScoreProgressionChart(team1TurnScores: gameState.team1TurnScores, team2TurnScores: gameState.team2TurnScores)
+                            ScoreProgressionChart(team1TurnScores: gameState.scoreManager.team1TurnScores, team2TurnScores: gameState.scoreManager.team2TurnScores)
                             
                             // Words per minute table
                             WordsPerMinuteTable(

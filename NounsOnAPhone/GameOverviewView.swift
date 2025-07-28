@@ -58,7 +58,7 @@ struct GameOverviewView: View {
                                     .font(.title2)
                                     .foregroundColor(.white)
                                 
-                                Text("\(gameState.timerDuration) seconds per team")
+                                Text("\(gameState.timerManager.timerDuration) seconds per team")
                                     .font(.headline)
                                     .foregroundColor(.white)
                                     .fontWeight(.semibold)

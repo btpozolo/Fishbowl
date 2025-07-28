@@ -12,10 +12,10 @@ struct GamePlayView: View {
                     VStack(spacing: 32) {
                         // Top: Team and round info on same line
                         HStack(spacing: 4) {
-                            Text("Round \(gameState.currentRound.rawValue)")
+                            Text("Round \(gameState.roundManager.currentRound.rawValue)")
                                 .font(.title3)
                                 .foregroundColor(.primary)
-                            Text(": \(gameState.currentRound.shortDescription)")
+                            Text(": \(gameState.roundManager.currentRound.shortDescription)")
                                 .font(.title3)
                                 .fontWeight(.bold)
                                 .foregroundColor(.primary)
@@ -84,7 +84,7 @@ struct GamePlayView: View {
                                 }
                             }
                             .scaleEffect(1.0)
-                            .animation(.spring(response: 0.3), value: gameState.team1Score + gameState.team2Score)
+                            .animation(.spring(response: 0.3), value: gameState.scoreManager.team1Score + gameState.scoreManager.team2Score)
                             .padding(.bottom, 20)
                         }
                     }
@@ -113,7 +113,7 @@ struct GamePlayView: View {
                                             .stroke(timerColor.opacity(0.3), lineWidth: 1)
                                     )
                             )
-                            ProgressView(value: Double(gameState.timeRemaining), total: Double(gameState.timerDuration))
+                            ProgressView(value: Double(gameState.timerManager.timeRemaining), total: Double(gameState.timerManager.timerDuration))
                                 .progressViewStyle(LinearProgressViewStyle(tint: timerColor))
                                 .scaleEffect(x: 1, y: 1.5, anchor: .center)
                         }
@@ -121,8 +121,8 @@ struct GamePlayView: View {
                         
                         // Team scores below timer
                         VStack(spacing: 16) {
-                            ScoreDisplay(teamNumber: 1, score: gameState.team1Score, isCurrentTeam: gameState.currentTeam == 1)
-                            ScoreDisplay(teamNumber: 2, score: gameState.team2Score, isCurrentTeam: gameState.currentTeam == 2)
+                            ScoreDisplay(teamNumber: 1, score: gameState.scoreManager.team1Score, isCurrentTeam: gameState.roundManager.currentTeam == 1)
+                            ScoreDisplay(teamNumber: 2, score: gameState.scoreManager.team2Score, isCurrentTeam: gameState.roundManager.currentTeam == 2)
                         }
                         
                         Spacer()
@@ -138,11 +138,11 @@ struct GamePlayView: View {
                         // Team and round info
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Round \(gameState.currentRound.rawValue)")
+                                Text("Round \(gameState.roundManager.currentRound.rawValue)")
                                     .font(.title)
                                     .fontWeight(.bold)
                                     .foregroundColor(.primary)
-                                Text(gameState.currentRound.shortDescription)
+                                Text(gameState.roundManager.currentRound.shortDescription)
                                     .font(.title3)
                                     .foregroundColor(.primary)
                             }
@@ -168,7 +168,7 @@ struct GamePlayView: View {
                                                 .stroke(timerColor.opacity(0.3), lineWidth: 1)
                                         )
                                 )
-                                ProgressView(value: Double(gameState.timeRemaining), total: Double(gameState.timerDuration))
+                                ProgressView(value: Double(gameState.timerManager.timeRemaining), total: Double(gameState.timerManager.timerDuration))
                                     .progressViewStyle(LinearProgressViewStyle(tint: timerColor))
                                     .scaleEffect(x: 1, y: 2, anchor: .center)
                             }
@@ -185,10 +185,6 @@ struct GamePlayView: View {
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
-                                .background(
-                                    Capsule()
-                                        .fill(Color(.systemGray6))
-                                )
                             Text(currentWord.text)
                                 .font(.system(size: 52, weight: .bold, design: .rounded))
                                 .foregroundColor(.primary)
@@ -254,15 +250,25 @@ struct GamePlayView: View {
                     }
                     // Scores with improved design
                     HStack(spacing: 20) {
-                        ScoreDisplay(teamNumber: 1, score: gameState.team1Score, isCurrentTeam: gameState.currentTeam == 1)
-                        ScoreDisplay(teamNumber: 2, score: gameState.team2Score, isCurrentTeam: gameState.currentTeam == 2)
+                        ScoreDisplay(teamNumber: 1, score: gameState.scoreManager.team1Score, isCurrentTeam: gameState.roundManager.currentTeam == 1)
+                        ScoreDisplay(teamNumber: 2, score: gameState.scoreManager.team2Score, isCurrentTeam: gameState.roundManager.currentTeam == 2)
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 40)
                 }
             }
         }
-        .background(Color(.systemGroupedBackground))
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(red: 0.22, green: 0.60, blue: 0.98).opacity(0.2),
+                    Color(red: 0.20, green: 0.98, blue: 0.98).opacity(0.01)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        )
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
         }
@@ -272,14 +278,14 @@ struct GamePlayView: View {
     }
     
     private var timeString: String {
-        let minutes = gameState.timeRemaining / 60
-        let seconds = gameState.timeRemaining % 60
+        let minutes = gameState.timerManager.timeRemaining / 60
+        let seconds = gameState.timerManager.timeRemaining % 60
         return String(format: "%d:%02d", minutes, seconds)
     }
     
     private var timerColor: Color {
-        let totalTime = gameState.timerDuration
-        let remainingTime = gameState.timeRemaining
+        let totalTime = gameState.timerManager.timerDuration
+        let remainingTime = gameState.timerManager.timeRemaining
         let percentage = Double(remainingTime) / Double(totalTime)
         
         if percentage <= 0.17 { // Last 17% of time
@@ -292,8 +298,8 @@ struct GamePlayView: View {
     }
     
     private var timerBackgroundColor: Color {
-        let totalTime = gameState.timerDuration
-        let remainingTime = gameState.timeRemaining
+        let totalTime = gameState.timerManager.timerDuration
+        let remainingTime = gameState.timerManager.timeRemaining
         let percentage = Double(remainingTime) / Double(totalTime)
         
         if percentage <= 0.17 {
@@ -352,11 +358,11 @@ struct ScoreDisplay: View {
     sampleGameState.addWord("Mountain")
     sampleGameState.currentWord = Word(text: "Pizza")
     sampleGameState.currentPhase = .playing
-    sampleGameState.timeRemaining = 45
-    sampleGameState.timerDuration = 60
-    sampleGameState.team1Score = 3
-    sampleGameState.team2Score = 2
-    sampleGameState.currentTeam = 1
+    sampleGameState.timerManager.timeRemaining = 45
+    sampleGameState.timerManager.updateTimerDuration(60)
+    sampleGameState.scoreManager.team1Score = 3
+    sampleGameState.scoreManager.team2Score = 2
+    sampleGameState.roundManager.currentTeam = 1
     sampleGameState.skipEnabled = true
     
     return GamePlayView(gameState: sampleGameState)
@@ -371,11 +377,11 @@ struct ScoreDisplay: View {
     sampleGameState.addWord("Mountain")
     sampleGameState.currentWord = Word(text: "Pizza")
     sampleGameState.currentPhase = .playing
-    sampleGameState.timeRemaining = 45
-    sampleGameState.timerDuration = 60
-    sampleGameState.team1Score = 3
-    sampleGameState.team2Score = 2
-    sampleGameState.currentTeam = 1
+    sampleGameState.timerManager.timeRemaining = 45
+    sampleGameState.timerManager.updateTimerDuration(60)
+    sampleGameState.scoreManager.team1Score = 3
+    sampleGameState.scoreManager.team2Score = 2
+    sampleGameState.roundManager.currentTeam = 1
     sampleGameState.skipEnabled = true
     
     return GamePlayView(gameState: sampleGameState)

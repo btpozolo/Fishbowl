@@ -105,4 +105,128 @@ The app includes background music and sound effects. Audio files should be place
 - `clock_tick_old.wav` - Background music during gameplay
 - `2_gentle_pulse_high_pitch.wav` - Timer expiration alert
 
-See `AUDIO_SETUP.md` for detailed audio configuration instructions. 
+See `AUDIO_SETUP.md` for detailed audio configuration instructions.
+
+## 🚨 To-Do: App Store Readiness
+
+### Phase 1: Critical Fixes (HIGH PRIORITY - Must Fix Before Submission)
+
+#### 🔥 **Critical Bugs**
+- [ ] **Fix Missing Implementation**: `WordInputView.swift:86` calls `gameState.addSampleWords(count: 5)` but method doesn't exist
+  - **File**: `GameModels.swift`
+  - **Impact**: Runtime crash
+  - **Fix**: Implement the missing method
+- [ ] **Remove Debug Code**: Remove all `print("[DEBUG]...")` statements from production code
+  - **Files**: `GameModels.swift` (lines 229, 340, 408, 475-482)
+  - **Impact**: Professional code quality
+- [ ] **Fix Audio Settings Coupling**: Background music and sound effects are unnecessarily linked
+  - **File**: `SoundManager.swift:129`
+  - **Fix**: Allow independent control of background music and sound effects
+
+#### 📱 **App Store Requirements**
+- [ ] **Update Bundle Identifier**: Change from `com.example.Fishbowl-v2` to unique identifier
+  - **File**: Project settings
+  - **Impact**: App Store submission requirement
+- [ ] **App Store Connect Setup**: Create account and configure app metadata
+  - [ ] App description and keywords
+  - [ ] Screenshots for all device sizes
+  - [ ] App icon in all required sizes
+  - [ ] Privacy policy URL
+- [ ] **Launch Screen**: Currently empty, needs proper design
+  - **File**: `Info.plist` - `UILaunchScreen`
+- [ ] **Code Signing**: Set up proper distribution certificate
+  - **Impact**: Required for App Store distribution
+
+### Phase 2: Code Quality & Bug Fixes (MEDIUM PRIORITY)
+
+#### 🐛 **Analytics & Display Issues**
+- [ ] **Fix Words Per Minute Calculation**: Incorrect when teams advance through multiple rounds
+  - **Files**: `GameModels.swift:493-529`, `WordsPerMinuteTable.swift`
+  - **Issue**: Time allocation bugs in multi-round scenarios
+- [ ] **Fix Chart Y-Axis Scaling**: Shows every score increment (1,2,3,4...) making charts cluttered
+  - **Files**: `ScoreProgressionChart.swift:147-153`
+  - **Fix**: Show only multiples of 5 (0, 5, 10, 15...)
+- [ ] **Score Tracking Edge Cases**: Some issues in turn score recording
+  - **File**: `GameModels.swift`
+  - **Impact**: Inaccurate analytics
+
+#### 🏗️ **Architecture Improvements**
+- [ ] **Refactor GameState Class**: Currently 553 lines - violates single responsibility principle
+  - **File**: `GameModels.swift`
+  - **Goal**: Split into focused managers (TimerManager, ScoreManager, RoundManager, AnalyticsManager)
+- [ ] **Extract Constants**: Remove magic numbers throughout codebase
+  - **Create**: `GameConstants.swift`
+  - **Examples**: `minimumWordsToStart = 3`, `defaultTimerDuration = 60`
+- [ ] **Improve Error Handling**: Add graceful handling of failures
+  - **Files**: `SoundManager.swift` (audio file loading)
+  - **Add**: User-facing error messages
+
+### Phase 3: Testing & Quality Assurance (MEDIUM PRIORITY)
+
+#### 🧪 **Testing Infrastructure**
+- [ ] **Expand Unit Tests**: Currently minimal test coverage
+  - **Files**: `NounsOnAPhoneTests/`
+  - **Add**: Game flow tests, timer tests, score calculation tests
+- [ ] **Integration Tests**: Full game flow and UI interaction tests
+- [ ] **Performance Tests**: Memory usage and responsiveness testing
+
+#### 🔧 **Code Quality**
+- [ ] **Add SwiftLint**: For code style consistency
+- [ ] **Documentation**: Add comprehensive code comments
+- [ ] **Performance Optimization**: Reduce UI redraws and optimize state updates
+
+### Phase 4: Enhanced Features (LOW PRIORITY)
+
+#### ✨ **User Experience Improvements**
+- [ ] **Haptic Feedback**: Add tactile feedback for game events
+- [ ] **Advanced Analytics**: Word difficulty scoring, team performance comparisons
+- [ ] **Data Persistence**: Save game sessions and history
+- [ ] **Import/Export**: Word list import from text files, export statistics
+- [ ] **Share Functionality**: Share word lists and game results
+
+#### 🎵 **Audio Enhancements**
+- [ ] **Audio Ducking**: Background music ducks during sound effects
+- [ ] **More Sound Effects**: Different sounds for different game events
+- [ ] **Volume Sliders**: Individual volume controls for music and effects
+
+### Phase 5: Final Polish (LOW PRIORITY)
+
+#### 🎨 **UI/UX Polish**
+- [ ] **Animation Refinements**: Smoother transitions and micro-interactions
+- [ ] **Accessibility Improvements**: Enhanced VoiceOver support
+- [ ] **Dark Mode Support**: Full dark mode implementation
+- [ ] **iPad Support**: Optimize for larger screens
+
+#### 📊 **Analytics & Insights**
+- [ ] **Game History**: Track and display historical game data
+- [ ] **Performance Metrics**: Detailed team and word performance analysis
+- [ ] **Export Features**: Share statistics and game results
+
+---
+
+## 📋 **Success Metrics**
+
+- [ ] Build succeeds without errors
+- [ ] Test coverage > 80%
+- [ ] No classes > 200 lines
+- [ ] All magic numbers extracted to constants
+- [ ] No debug code in production
+- [ ] Proper error handling throughout
+- [ ] Words Per Minute calculations are accurate across multi-round turns
+- [ ] Chart Y-axis shows appropriate scale (multiples of 5)
+- [ ] Score progression correctly tracks cumulative scores at turn end
+- [ ] App Store submission approved
+
+## ⏱️ **Estimated Timeline**
+
+- **Phase 1 (Critical Fixes)**: 1-2 days
+- **Phase 2 (Code Quality)**: 3-5 days  
+- **Phase 3 (Testing)**: 2-3 days
+- **Phase 4 (Enhanced Features)**: 1-2 weeks (optional)
+- **Phase 5 (Final Polish)**: 1-2 days
+
+**Total to App Store Ready**: 1-2 weeks (focusing on Phases 1-3)
+
+---
+
+*Last Updated: 2025-07-17* 

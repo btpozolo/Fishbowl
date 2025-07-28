@@ -184,19 +184,19 @@ final class DuplicateWordBugTests: XCTestCase {
         gameState.addWord("pizza")
         gameState.addWord("burger")
         
+        // Set a very short timer before starting the game
+        gameState.timerManager.updateTimerDuration(1)
+        
         gameState.startGame()
         gameState.beginRound()
-        
-        // Set a very short timer for testing
-        gameState.timerDuration = 1
-        gameState.timeRemaining = 1
         
         // Wait for timer to expire (simulate by calling timerExpired directly)
         // Note: We can't directly call timerExpired as it's private, so we'll test the behavior
         // by checking that the game state is properly set up for timer expiration
         
         XCTAssertEqual(gameState.currentTeam, 1, "Should start with team 1")
-        XCTAssertTrue(gameState.isTimerRunning, "Timer should be running")
+        XCTAssertTrue(gameState.timerManager.isTimerRunning, "Timer should be running")
+        XCTAssertEqual(gameState.timerManager.timerDuration, 1, "Timer duration should be set to 1 second")
     }
     
     // MARK: - Bug Test 7: Word Selection Randomness with Duplicates

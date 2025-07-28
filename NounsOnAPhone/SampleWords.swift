@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Sample Words for Testing
 extension GameState {
-    func addSampleWords(count: Int = 10) {
+    func addSampleWords(count: Int = 5) {
         let allSampleWords = [
             "accordion", "alien", "avalanche", "bacon", "ballerina", "banjo", "barnacle", "beard", "beehive", "bicycle",
             "bingo", "blender", "blobfish", "boomerang", "broomstick", "bubble", "bulldozer", "burrito", "cactus", "cannonball",
