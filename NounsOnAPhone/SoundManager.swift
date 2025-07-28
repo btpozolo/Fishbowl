@@ -126,7 +126,6 @@ class SoundManager: ObservableObject {
     // MARK: - Settings Management
     func toggleBackgroundMusic() {
         isBackgroundMusicEnabled.toggle()
-        isSoundEffectsEnabled = isBackgroundMusicEnabled // Sync both settings
         if isBackgroundMusicEnabled {
             resumeBackgroundMusic()
         } else {
@@ -139,9 +138,10 @@ class SoundManager: ObservableObject {
     }
     
     func toggleAllSounds() {
-        isBackgroundMusicEnabled.toggle()
-        isSoundEffectsEnabled = isBackgroundMusicEnabled
-        if isBackgroundMusicEnabled {
+        let newState = !isBackgroundMusicEnabled
+        isBackgroundMusicEnabled = newState
+        isSoundEffectsEnabled = newState
+        if newState {
             resumeBackgroundMusic()
         } else {
             pauseBackgroundMusic()

@@ -232,7 +232,6 @@ class GameState: ObservableObject {
         // At the END of the team's turn (timer expired), record time for current round
         recordTimeForCurrentRound()
         // Record score at the end of the team turn (timer expired)
-        print("[DEBUG] Timer expired for Team \(currentTeam) - recording turn score")
         recordTeamTurnScore()
         
         // If there are still words left, switch teams and continue the round
@@ -339,10 +338,7 @@ class GameState: ObservableObject {
             recordTimeForCurrentRound()
             // Only record score if this is the very end of the game
             if currentRound == .oneWord {
-                print("[DEBUG] Game ending, recording final team score.")
                 recordTeamTurnScore()
-            } else {
-                print("[DEBUG] Round ended early, NOT recording team score (will record at timerExpired).")
             }
             
             if currentRound == .oneWord {
@@ -407,7 +403,6 @@ class GameState: ObservableObject {
         roundUsedWordIds.removeAll()
         team1TurnScores = [0]
         team2TurnScores = [0]
-        print("[DEBUG] Reset scores. team1TurnScores: \(team1TurnScores), team2TurnScores: \(team2TurnScores)")
         roundStats.removeAll()
         currentRoundStartTime = nil
         currentTeamStartTime = nil
@@ -494,13 +489,10 @@ class GameState: ObservableObject {
     
     // When a team's turn ends, append their new cumulative score
     private func recordTeamTurnScore() {
-        print("[DEBUG] Recording team \(currentTeam) score at end of turn. Round: \(currentRound), Score: \(currentTeam == 1 ? team1Score : team2Score)")
         if currentTeam == 1 {
             team1TurnScores.append(team1Score)
-            print("[DEBUG] Team 1 turn ended. Appended score: \(team1Score). team1TurnScores: \(team1TurnScores)")
         } else {
             team2TurnScores.append(team2Score)
-            print("[DEBUG] Team 2 turn ended. Appended score: \(team2Score). team2TurnScores: \(team2TurnScores)")
         }
     }
     

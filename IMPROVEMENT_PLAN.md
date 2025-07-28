@@ -37,51 +37,46 @@ This document outlines recommended improvements for the Fishbowl (Nouns on a Pho
 - The calculation divides by 60 seconds but uses actual elapsed time, creating inconsistency
 - `team1Time`/`team2Time` accumulate incorrectly across round transitions
 
-### 5. Score Progression Chart Y-Axis Scaling
-**Files**: `ScoreProgressionChart.swift:147-153`, `AxisLabels.swift:224-231`
-**Issue**: Y-axis shows every score increment (1, 2, 3, 4...) making chart cluttered
-**Impact**: Poor readability with many score points
-**Request**: Label only every 5 points (0, 5, 10, 15...)
 
 ## Improvement Roadmap
 
 ## Phase 1: Critical Fixes (High Priority) 🔥
 
-### 1.1 Implement Missing Sample Words Method
-**Estimated Time**: 30 minutes
-**Files**: `GameModels.swift`
+### 1.1 Implement Missing Sample Words Method ❌ NOT AN ISSUE
+**Status**: Not actually an issue - method already exists and works correctly
+**Files**: `SampleWords.swift` (contains implementation as extension to GameState)
 
-```swift
-extension GameState {
-    func addSampleWords(count: Int = 5) {
-        let samples = [
-            "Pizza", "Elephant", "Basketball", "Sunshine", "Mountain",
-            "Ocean", "Guitar", "Butterfly", "Rainbow", "Coffee",
-            "Dragon", "Castle", "Lightning", "Telescope", "Waterfall"
-        ]
-        samples.prefix(count).forEach { addWord($0) }
-    }
-}
-```
+The `addSampleWords` method is already implemented and functional:
+- Method exists in `SampleWords.swift` as an extension to `GameState`
+- `WordInputView.swift:103` successfully calls `gameState.addSampleWords(count: 5)`
+- Feature is working as intended
 
-### 1.2 Remove Debug Code
+### 1.2 Remove Debug Code ✅ COMPLETED
 **Estimated Time**: 1 hour
 **Files**: `GameModels.swift`
-**Action**: Remove or replace with proper logging
+**Action**: Removed all debug print statements from production code
 
-- Line 229: `print("[DEBUG] Timer expired for Team...")`
-- Line 340: `print("[DEBUG] Game ending..."`
-- Line 408: `print("[DEBUG] Reset scores..."`
-- Line 475-482: All debug prints in `recordTeamTurnScore()`
+**Removed Debug Statements**:
+- Line 234: `print("[DEBUG] Timer expired for Team...")`
+- Line 341: `print("[DEBUG] Game ending, recording final team score.")`
+- Line 344: `print("[DEBUG] Round ended early, NOT recording team score...")`
+- Line 409: `print("[DEBUG] Reset scores. team1TurnScores: ...")`
+- Line 496: `print("[DEBUG] Recording team \(currentTeam) score at end of turn...")`
+- Line 499: `print("[DEBUG] Team 1 turn ended. Appended score: ...")`
+- Line 502: `print("[DEBUG] Team 2 turn ended. Appended score: ...")`
 
-### 1.3 Fix Audio Settings Coupling
+**Result**: Production code now clean of debug statements
+
+### 1.3 Fix Audio Settings Coupling ✅ COMPLETED
 **Estimated Time**: 30 minutes
-**Files**: `SoundManager.swift:129`
-**Current Issue**:
-```swift
-isSoundEffectsEnabled = isBackgroundMusicEnabled // Unintended coupling
-```
-**Fix**: Allow independent control of background music and sound effects
+**Files**: `SoundManager.swift`
+**Issue Fixed**: Removed unintended coupling between background music and sound effects
+
+**Changes Made**:
+1. **Fixed `toggleBackgroundMusic()`**: Removed line that forced `isSoundEffectsEnabled = isBackgroundMusicEnabled`
+2. **Fixed `toggleAllSounds()`**: Improved logic to properly toggle both settings together when intended
+
+**Result**: Background music and sound effects can now be controlled independently
 
 ### 1.4 Fix Words Per Minute Calculation ✅ COMPLETED
 **Estimated Time**: 2-3 hours
@@ -124,7 +119,7 @@ private func recordTimeForCurrentRound() {
 
 **Result**: WPM calculations now accurately reflect time spent with words showing per round!
 
-### 1.5 Fix Chart Y-Axis Scaling
+### 1.5 Fix Chart Y-Axis Scaling ✅ COMPLETED
 **Estimated Time**: 1 hour
 **Files**: `ScoreProgressionChart.swift`
 **Priority**: Medium (UX improvement)
@@ -311,11 +306,11 @@ struct GameConstants {
 ## Implementation Order Recommendation
 
 ### Week 1: Critical Fixes
-1. Implement `addSampleWords()` method (30 min)
-2. Remove debug print statements (1 hour)
-3. Fix audio settings coupling (30 min)
-4. Fix Words Per Minute calculation (2-3 hours)
-5. Fix chart Y-axis scaling (1 hour)
+1. ~~Implement `addSampleWords()` method~~ ❌ (Not needed - already working)
+2. Remove debug print statements ✅ (Completed)
+3. Fix audio settings coupling ✅ (Completed)
+4. Fix Words Per Minute calculation ✅ (Completed)
+5. Fix chart Y-axis scaling ✅ (Completed)
 6. Basic unit tests for core functionality (2-3 hours)
 
 ### Week 2-3: Architecture Refactoring
@@ -335,11 +330,12 @@ struct GameConstants {
 - [ ] Test coverage > 80%
 - [ ] No classes > 200 lines
 - [ ] All magic numbers extracted to constants
-- [ ] No debug code in production
+- [x] No debug code in production ✅
 - [ ] Proper error handling throughout
-- [ ] Words Per Minute calculations are accurate across multi-round turns
-- [ ] Chart Y-axis shows appropriate scale (multiples of 5)
-- [ ] Score progression correctly tracks cumulative scores at turn end
+- [x] Words Per Minute calculations are accurate across multi-round turns ✅
+- [x] Chart Y-axis shows appropriate scale (multiples of 5) ✅
+- [x] Score progression correctly tracks cumulative scores at turn end ✅
+- [x] Audio settings work independently (background music vs sound effects) ✅
 
 ## Notes
 - Backup current code before starting refactoring
