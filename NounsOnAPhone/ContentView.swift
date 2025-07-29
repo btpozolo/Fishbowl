@@ -9,10 +9,22 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var gameState = GameState()
+    @State private var showLaunchScreen = true
 
     var body: some View {
         Group {
-            if gameState.currentPhase == .setup {
+            if showLaunchScreen {
+                // Launch screen - shows briefly then transitions to landing page
+                LaunchScreenView()
+                    .onAppear {
+                        // Show launch screen for 2 seconds, then transition to app
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                showLaunchScreen = false
+                            }
+                        }
+                    }
+            } else if gameState.currentPhase == .setup {
                 // Use NavigationStack for setup/landing pages
                 LandingPageView(gameState: gameState)
                     .onAppear {
