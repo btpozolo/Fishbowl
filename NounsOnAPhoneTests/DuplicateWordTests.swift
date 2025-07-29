@@ -22,8 +22,8 @@ final class DuplicateWordTests: XCTestCase {
         gameState.addWord("pizza")
         gameState.addWord("pizza")
         
-        XCTAssertEqual(gameState.words.count, 3, "Should allow duplicate words to be added")
-        XCTAssertEqual(gameState.words.filter { $0.text == "pizza" }.count, 3, "Should have 3 instances of 'pizza'")
+        XCTAssertEqual(gameState.wordManager.words.count, 3, "Should allow duplicate words to be added")
+        XCTAssertEqual(gameState.wordManager.words.filter { $0.text == "pizza" }.count, 3, "Should have 3 instances of 'pizza'")
     }
     
     func testAddDuplicateWordsWithDifferentCasing() {
@@ -32,10 +32,10 @@ final class DuplicateWordTests: XCTestCase {
         gameState.addWord("pizza")
         gameState.addWord("PIZZA")
         
-        XCTAssertEqual(gameState.words.count, 3, "Should treat different cases as different words")
-        XCTAssertEqual(gameState.words.filter { $0.text == "Pizza" }.count, 1, "Should have 1 instance of 'Pizza'")
-        XCTAssertEqual(gameState.words.filter { $0.text == "pizza" }.count, 1, "Should have 1 instance of 'pizza'")
-        XCTAssertEqual(gameState.words.filter { $0.text == "PIZZA" }.count, 1, "Should have 1 instance of 'PIZZA'")
+        XCTAssertEqual(gameState.wordManager.words.count, 3, "Should treat different cases as different words")
+        XCTAssertEqual(gameState.wordManager.words.filter { $0.text == "Pizza" }.count, 1, "Should have 1 instance of 'Pizza'")
+        XCTAssertEqual(gameState.wordManager.words.filter { $0.text == "pizza" }.count, 1, "Should have 1 instance of 'pizza'")
+        XCTAssertEqual(gameState.wordManager.words.filter { $0.text == "PIZZA" }.count, 1, "Should have 1 instance of 'PIZZA'")
     }
     
     func testAddDuplicateWordsWithWhitespace() {
@@ -44,9 +44,9 @@ final class DuplicateWordTests: XCTestCase {
         gameState.addWord(" pizza ")
         gameState.addWord("pizza")
         
-        XCTAssertEqual(gameState.words.count, 3, "Should treat words with different whitespace as different")
-        XCTAssertEqual(gameState.words.filter { $0.text == "pizza" }.count, 2, "Should have 2 instances of 'pizza'")
-        XCTAssertEqual(gameState.words.filter { $0.text == " pizza " }.count, 1, "Should have 1 instance of ' pizza '")
+        XCTAssertEqual(gameState.wordManager.words.count, 3, "Should treat words with different whitespace as different")
+        XCTAssertEqual(gameState.wordManager.words.filter { $0.text == "pizza" }.count, 2, "Should have 2 instances of 'pizza'")
+        XCTAssertEqual(gameState.wordManager.words.filter { $0.text == " pizza " }.count, 1, "Should have 1 instance of ' pizza '")
     }
     
     // MARK: - Game Flow with Duplicate Words Tests
@@ -73,11 +73,11 @@ final class DuplicateWordTests: XCTestCase {
         
         // Check that all words (including duplicates) are available for the round
         XCTAssertEqual(gameState.currentPhase, .playing, "Should be in playing phase")
-        XCTAssertNotNil(gameState.currentWord, "Should have a current word")
+        XCTAssertNotNil(gameState.wordManager.currentWord, "Should have a current word")
         
         // The word should be one of the added words
         let validWords = ["pizza", "burger"]
-        XCTAssertTrue(validWords.contains(gameState.currentWord?.text ?? ""), "Current word should be one of the valid words")
+        XCTAssertTrue(validWords.contains(gameState.wordManager.currentWord?.text ?? ""), "Current word should be one of the valid words")
     }
     
     // MARK: - Word Guessing with Duplicates Tests
@@ -90,17 +90,17 @@ final class DuplicateWordTests: XCTestCase {
         gameState.startGame()
         gameState.beginRound()
         
-        let initialWord = gameState.currentWord?.text
+        let initialWord = gameState.wordManager.currentWord?.text
         
         // Guess the word
         gameState.wordGuessed()
         
         // Check that the word is marked as used in the round
-        XCTAssertTrue(gameState.words.filter { $0.text == initialWord }.contains { $0.used }, "Word should be marked as used")
+        XCTAssertTrue(gameState.wordManager.words.filter { $0.text == initialWord }.contains { $0.used }, "Word should be marked as used")
         
         // Check that roundUsedWords contains the word
         // Note: We can't directly access roundUsedWords as it's private, but we can infer from behavior
-        XCTAssertNotEqual(gameState.currentWord?.text, initialWord, "Should have a different word after guessing")
+        XCTAssertNotEqual(gameState.wordManager.currentWord?.text, initialWord, "Should have a different word after guessing")
     }
     
     func testGuessAllInstancesOfDuplicateWord() {
@@ -114,20 +114,20 @@ final class DuplicateWordTests: XCTestCase {
         
         // Guess "pizza" multiple times
         var pizzaGuessed = 0
-        var currentWord = gameState.currentWord?.text
+        var currentWord = gameState.wordManager.currentWord?.text
         
         while currentWord == "pizza" && pizzaGuessed < 3 {
             gameState.wordGuessed()
             pizzaGuessed += 1
-            currentWord = gameState.currentWord?.text
+            currentWord = gameState.wordManager.currentWord?.text
         }
         
         // Should have guessed pizza up to 3 times (once for each instance)
         XCTAssertLessThanOrEqual(pizzaGuessed, 3, "Should be able to guess pizza up to 3 times")
         
         // After all pizzas are guessed, should either have burger or no more words
-        if gameState.currentWord != nil {
-            XCTAssertEqual(gameState.currentWord?.text, "burger", "Should have burger as the remaining word")
+        if gameState.wordManager.currentWord != nil {
+            XCTAssertEqual(gameState.wordManager.currentWord?.text, "burger", "Should have burger as the remaining word")
         }
     }
     
@@ -141,12 +141,12 @@ final class DuplicateWordTests: XCTestCase {
         gameState.startGame()
         gameState.beginRound()
         
-        let initialScore = gameState.team1Score
+        let initialScore = gameState.scoreManager.team1Score
         
         // Guess a word
         gameState.wordGuessed()
         
-        XCTAssertEqual(gameState.team1Score, initialScore + 1, "Score should increment by 1 for each guessed word")
+        XCTAssertEqual(gameState.scoreManager.team1Score, initialScore + 1, "Score should increment by 1 for each guessed word")
     }
     
     // MARK: - Round Transition with Duplicates Tests
@@ -160,7 +160,7 @@ final class DuplicateWordTests: XCTestCase {
         gameState.beginRound()
         
         // Guess all words
-        while gameState.currentWord != nil {
+        while gameState.wordManager.currentWord != nil {
             gameState.wordGuessed()
         }
         
@@ -176,7 +176,7 @@ final class DuplicateWordTests: XCTestCase {
         gameState.addWord("   ")
         gameState.addWord("\n\t")
         
-        XCTAssertEqual(gameState.words.count, 0, "Should not add empty or whitespace-only words")
+        XCTAssertEqual(gameState.wordManager.words.count, 0, "Should not add empty or whitespace-only words")
     }
     
     func testSingleWordGame() {
@@ -191,8 +191,8 @@ final class DuplicateWordTests: XCTestCase {
         gameState.beginRound()
         
         // Should be able to play with the same word multiple times
-        XCTAssertNotNil(gameState.currentWord, "Should have a current word")
-        XCTAssertEqual(gameState.currentWord?.text, "pizza", "Current word should be pizza")
+        XCTAssertNotNil(gameState.wordManager.currentWord, "Should have a current word")
+        XCTAssertEqual(gameState.wordManager.currentWord?.text, "pizza", "Current word should be pizza")
     }
     
     func testWordRemovalAfterGuessing() {
@@ -204,11 +204,11 @@ final class DuplicateWordTests: XCTestCase {
         gameState.beginRound()
         
         // Guess the first word
-        let firstWord = gameState.currentWord?.text
+        let firstWord = gameState.wordManager.currentWord?.text
         gameState.wordGuessed()
         
         // The second word should be different (unless it's the same word type)
-        let secondWord = gameState.currentWord?.text
+        let secondWord = gameState.wordManager.currentWord?.text
         
         // If we guessed pizza and there's another pizza, we might get pizza again
         // But if we guessed burger, we should get a different word
@@ -230,7 +230,7 @@ final class DuplicateWordTests: XCTestCase {
         let endTime = CFAbsoluteTimeGetCurrent()
         let duration = endTime - startTime
         
-        XCTAssertEqual(gameState.words.count, 100, "Should add 100 instances of pizza")
+        XCTAssertEqual(gameState.wordManager.words.count, 100, "Should add 100 instances of pizza")
         XCTAssertLessThan(duration, 1.0, "Adding 100 duplicate words should take less than 1 second")
     }
     
@@ -247,7 +247,7 @@ final class DuplicateWordTests: XCTestCase {
         let finalMemory = getMemoryUsage()
         let memoryIncrease = finalMemory - initialMemory
         
-        XCTAssertEqual(gameState.words.count, 1000, "Should add 1000 instances of pizza")
+        XCTAssertEqual(gameState.wordManager.words.count, 1000, "Should add 1000 instances of pizza")
         XCTAssertLessThan(memoryIncrease, 10 * 1024 * 1024, "Memory increase should be less than 10MB for 1000 words")
     }
     

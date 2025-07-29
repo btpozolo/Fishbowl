@@ -35,7 +35,7 @@ struct SetupView: View {
                 
                 Spacer()
                 
-                Text("\(gameState.timerManager.timerDuration)s")
+                Text("\(gameState.timerDuration)s")
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
@@ -48,7 +48,7 @@ struct SetupView: View {
             VStack(spacing: 12) {
                 Slider(
                     value: Binding(
-                        get: { Double(gameState.timerManager.timerDuration) },
+                        get: { Double(gameState.timerDuration) },
                         set: { gameState.timerManager.updateTimerDuration(Int($0)) }
                     ),
                     in: 10...120,
@@ -80,12 +80,12 @@ struct SetupView: View {
                         Text("\(duration)s")
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(gameState.timerManager.timerDuration == duration ? .white : Color(red: 0.22, green: 0.60, blue: 0.98))
+                            .foregroundColor(gameState.timerDuration == duration ? .white : Color(red: 0.22, green: 0.60, blue: 0.98))
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .fill(gameState.timerManager.timerDuration == duration ? Color(red: 0.22, green: 0.60, blue: 0.98) : Color(red: 0.22, green: 0.60, blue: 0.98).opacity(0.1))
+                                    .fill(gameState.timerDuration == duration ? Color(red: 0.22, green: 0.60, blue: 0.98) : Color(red: 0.22, green: 0.60, blue: 0.98).opacity(0.1))
                             )
                     }
                 }
@@ -107,7 +107,7 @@ struct SetupView: View {
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
-                                        Toggle("", isOn: $gameState.wordManager.skipEnabled)
+                                        Toggle("", isOn: $gameState.wordManager.skipAllowed)
                     .toggleStyle(SwitchToggleStyle(tint: Color(red: 0.22, green: 0.60, blue: 0.98)))
             }
             

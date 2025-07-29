@@ -22,9 +22,9 @@ final class IDBasedWordTests: XCTestCase {
         gameState.addWord("pizza")
         gameState.addWord("pizza")
         
-        let wordIds = Set(gameState.words.map { $0.id })
+        let wordIds = Set(gameState.wordManager.words.map { $0.id })
         XCTAssertEqual(wordIds.count, 3, "Each word should have a unique ID")
-        XCTAssertEqual(gameState.words.count, 3, "Should have 3 words")
+        XCTAssertEqual(gameState.wordManager.words.count, 3, "Should have 3 words")
     }
     
     func testWordTrackingByID() {
@@ -38,7 +38,7 @@ final class IDBasedWordTests: XCTestCase {
         
         // Track which specific word instances are used
         var usedWordIds: Set<UUID> = []
-        var currentWord = gameState.currentWord
+        var currentWord = gameState.wordManager.currentWord
         
         while currentWord != nil {
             if let word = currentWord {
@@ -46,7 +46,7 @@ final class IDBasedWordTests: XCTestCase {
                 XCTAssertFalse(usedWordIds.contains(word.id), "Should not get the same word instance twice")
                 usedWordIds.insert(word.id)
                 gameState.wordGuessed()
-                currentWord = gameState.currentWord
+                currentWord = gameState.wordManager.currentWord
             }
         }
         
@@ -64,14 +64,14 @@ final class IDBasedWordTests: XCTestCase {
         gameState.beginRound()
         
         var pizzaGuessed = 0
-        var currentWord = gameState.currentWord
+        var currentWord = gameState.wordManager.currentWord
         
         while currentWord != nil && pizzaGuessed < 3 {
             if currentWord?.text == "pizza" {
                 pizzaGuessed += 1
             }
             gameState.wordGuessed()
-            currentWord = gameState.currentWord
+            currentWord = gameState.wordManager.currentWord
         }
         
         // Should be able to guess pizza exactly 3 times (once for each instance)
@@ -88,16 +88,16 @@ final class IDBasedWordTests: XCTestCase {
         gameState.startGame()
         gameState.beginRound()
         
-        let initialScore = gameState.team1Score
+        let initialScore = gameState.scoreManager.team1Score
         var wordsGuessed = 0
         
         // Guess all words
-        while gameState.currentWord != nil {
+        while gameState.wordManager.currentWord != nil {
             gameState.wordGuessed()
             wordsGuessed += 1
         }
         
-        let finalScore = gameState.team1Score
+        let finalScore = gameState.scoreManager.team1Score
         let scoreIncrease = finalScore - initialScore
         
         // Should get 1 point for each word instance
@@ -115,7 +115,7 @@ final class IDBasedWordTests: XCTestCase {
         gameState.beginRound()
         
         // Guess all words in the first round
-        while gameState.currentWord != nil {
+        while gameState.wordManager.currentWord != nil {
             gameState.wordGuessed()
         }
         
@@ -129,7 +129,7 @@ final class IDBasedWordTests: XCTestCase {
         XCTAssertEqual(gameState.currentPhase, .playing, "Should be in playing phase for next round")
         
         // All words should be available again for the new round
-        XCTAssertNotNil(gameState.currentWord, "Should have a current word in the new round")
+        XCTAssertNotNil(gameState.wordManager.currentWord, "Should have a current word in the new round")
     }
     
     func testWordRemovalByID() {
@@ -144,8 +144,8 @@ final class IDBasedWordTests: XCTestCase {
         var guessedWordIds: Set<UUID> = []
         
         // Guess words and track their IDs
-        while gameState.currentWord != nil {
-            if let currentWord = gameState.currentWord {
+        while gameState.wordManager.currentWord != nil {
+            if let currentWord = gameState.wordManager.currentWord {
                 guessedWordIds.insert(currentWord.id)
             }
             gameState.wordGuessed()
@@ -155,7 +155,7 @@ final class IDBasedWordTests: XCTestCase {
         XCTAssertEqual(guessedWordIds.count, 3, "Should guess exactly 3 unique word instances")
         
         // Check that all guessed words are marked as used
-        let usedWords = gameState.words.filter { $0.used }
+        let usedWords = gameState.wordManager.words.filter { $0.used }
         XCTAssertEqual(usedWords.count, 3, "Should have exactly 3 words marked as used")
         
         // Check that the used words match the guessed words
@@ -169,7 +169,7 @@ final class IDBasedWordTests: XCTestCase {
         gameState.addWord("pizza")
         gameState.addWord("PIZZA")
         
-        let wordIds = Set(gameState.words.map { $0.id })
+        let wordIds = Set(gameState.wordManager.words.map { $0.id })
         XCTAssertEqual(wordIds.count, 3, "Each case variation should have a unique ID")
         
         gameState.startGame()
@@ -178,8 +178,8 @@ final class IDBasedWordTests: XCTestCase {
         var guessedWords: Set<String> = []
         
         // Guess all words
-        while gameState.currentWord != nil {
-            if let currentWord = gameState.currentWord {
+        while gameState.wordManager.currentWord != nil {
+            if let currentWord = gameState.wordManager.currentWord {
                 guessedWords.insert(currentWord.text)
             }
             gameState.wordGuessed()
@@ -203,11 +203,11 @@ final class IDBasedWordTests: XCTestCase {
         let endTime = CFAbsoluteTimeGetCurrent()
         let duration = endTime - startTime
         
-        XCTAssertEqual(gameState.words.count, 100, "Should add 100 instances of pizza")
+        XCTAssertEqual(gameState.wordManager.words.count, 100, "Should add 100 instances of pizza")
         XCTAssertLessThan(duration, 1.0, "Adding 100 duplicate words should take less than 1 second")
         
         // Test that all words have unique IDs
-        let wordIds = Set(gameState.words.map { $0.id })
+        let wordIds = Set(gameState.wordManager.words.map { $0.id })
         XCTAssertEqual(wordIds.count, 100, "All 100 words should have unique IDs")
     }
     
@@ -227,11 +227,11 @@ final class IDBasedWordTests: XCTestCase {
         gameState.resetGame()
         
         // Check that everything is reset properly
-        XCTAssertEqual(gameState.words.count, 0, "Words should be cleared")
-        XCTAssertEqual(gameState.currentPhase, .wordInput, "Should be back to word input phase")
-        XCTAssertEqual(gameState.team1Score, 0, "Team 1 score should be reset")
-        XCTAssertEqual(gameState.team2Score, 0, "Team 2 score should be reset")
-        XCTAssertEqual(gameState.currentTeam, 1, "Should be back to team 1")
-        XCTAssertEqual(gameState.currentRound, .describe, "Should be back to describe round")
+        XCTAssertEqual(gameState.wordManager.words.count, 0, "Words should be cleared")
+        XCTAssertEqual(gameState.currentPhase, .setup, "Should be back to setup phase")
+        XCTAssertEqual(gameState.scoreManager.team1Score, 0, "Team 1 score should be reset")
+        XCTAssertEqual(gameState.scoreManager.team2Score, 0, "Team 2 score should be reset")
+        XCTAssertEqual(gameState.roundManager.currentTeam, 1, "Should be back to team 1")
+        XCTAssertEqual(gameState.roundManager.currentRound, .describe, "Should be back to describe round")
     }
 } 

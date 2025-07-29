@@ -56,8 +56,8 @@ struct WordInputView: View {
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                         
-                                        if gameState.wordManager.words.count > 0 {
-                    Text("Words added: \(gameState.wordManager.words.count)")
+                                        if gameState.wordCount > 0 {
+                    Text("Words added: \(gameState.wordCount)")
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.8))
                         }
@@ -110,17 +110,16 @@ struct WordInputView: View {
                                 Text("Add 5 Words")
                                     .font(.system(size: 18, weight: .bold))
                             }
-                            .foregroundColor(Color(red: 0.22, green: 0.60, blue: 0.98))
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.white)
-                            .cornerRadius(16)
                         }
-                        .buttonStyle(AddWordsButtonStyle())
+                        .buttonStyle(EnhancedAddWordsButtonStyle())
+                        .accessibilityLabel("Add 5 sample words")
+                        .accessibilityHint("Tap to quickly add 5 words for testing")
                         .padding(.horizontal, 20)
                         
                         // Start game button
-                        if gameState.canStartGame() {
+                        if gameState.canStartGame {
                             Button(action: {
                                 withAnimation(.spring(response: 0.6)) {
                                     gameState.startGame()
@@ -338,13 +337,53 @@ struct CustomTextFieldStyle: TextFieldStyle {
     }
 }
 
-// Custom button style for Add 5 Words button
-struct AddWordsButtonStyle: ButtonStyle {
+// Simple button style for Add 5 Words button with clean visual feedback
+struct EnhancedAddWordsButtonStyle: ButtonStyle {
+    @State private var isActivated = false
+    
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
+            .foregroundColor(buttonTextColor(isActivated: isActivated || configuration.isPressed))
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(buttonBackgroundColor(isActivated: isActivated || configuration.isPressed))
+            )
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .opacity(configuration.isPressed ? 0.8 : 1.0)
-            .animation(.spring(response: 0.2), value: configuration.isPressed)
+            .animation(.spring(response: 0.2, dampingFraction: 0.8), value: configuration.isPressed)
+            .animation(.easeInOut(duration: 0.2), value: isActivated)
+            .onChange(of: configuration.isPressed) { _, isPressed in
+                if isPressed {
+                    // Trigger light haptic feedback
+                    let impact = UIImpactFeedbackGenerator(style: .light)
+                    impact.impactOccurred()
+                    
+                    // Activate color change for 0.5 seconds
+                    isActivated = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isActivated = false
+                        }
+                    }
+                }
+            }
+    }
+    
+    // Simple color change - similar to landing page button style
+    private func buttonBackgroundColor(isActivated: Bool) -> Color {
+        if isActivated {
+            return Color(red: 0.22, green: 0.60, blue: 0.98) // Blue when activated
+        } else {
+            return Color.white // Original white
+        }
+    }
+    
+    // Simple text color change
+    private func buttonTextColor(isActivated: Bool) -> Color {
+        if isActivated {
+            return Color.white // White text when activated
+        } else {
+            return Color(red: 0.22, green: 0.60, blue: 0.98) // Original blue
+        }
     }
 }
 

@@ -31,7 +31,7 @@ final class DuplicateWordBugTests: XCTestCase {
         
         // Track which specific word instances are used
         var usedWordIds: Set<UUID> = []
-        var currentWord = gameState.currentWord
+        var currentWord = gameState.wordManager.currentWord
         
         while currentWord != nil {
             if let word = currentWord {
@@ -41,7 +41,7 @@ final class DuplicateWordBugTests: XCTestCase {
                 
                 usedWordIds.insert(word.id)
                 gameState.wordGuessed()
-                currentWord = gameState.currentWord
+                currentWord = gameState.wordManager.currentWord
             }
         }
         
@@ -63,21 +63,21 @@ final class DuplicateWordBugTests: XCTestCase {
         gameState.beginRound()
         
         // Guess the first word
-        let firstWord = gameState.currentWord
+        let firstWord = gameState.wordManager.currentWord
         gameState.wordGuessed()
         
         // Check that the word is marked as used in the words array
-        let usedWordsInArray = gameState.words.filter { $0.used }
+        let usedWordsInArray = gameState.wordManager.words.filter { $0.used }
         XCTAssertTrue(usedWordsInArray.contains { $0.id == firstWord?.id }, 
                      "Word should be marked as used in the words array")
         
         // Continue guessing to see if tracking remains consistent
-        while gameState.currentWord != nil {
-            let currentWord = gameState.currentWord
+        while gameState.wordManager.currentWord != nil {
+            let currentWord = gameState.wordManager.currentWord
             gameState.wordGuessed()
             
             // Check that the word is properly marked as used
-            let usedWords = gameState.words.filter { $0.used }
+            let usedWords = gameState.wordManager.words.filter { $0.used }
             XCTAssertTrue(usedWords.contains { $0.id == currentWord?.id }, 
                          "Each guessed word should be marked as used")
         }
@@ -98,8 +98,8 @@ final class DuplicateWordBugTests: XCTestCase {
         var guessedWords: [String] = []
         
         // Guess words and track what we get
-        while gameState.currentWord != nil {
-            let currentWord = gameState.currentWord?.text ?? ""
+        while gameState.wordManager.currentWord != nil {
+            let currentWord = gameState.wordManager.currentWord?.text ?? ""
             guessedWords.append(currentWord)
             gameState.wordGuessed()
         }
@@ -128,16 +128,16 @@ final class DuplicateWordBugTests: XCTestCase {
         gameState.startGame()
         gameState.beginRound()
         
-        let initialScore = gameState.team1Score
+        let initialScore = gameState.scoreManager.team1Score
         var wordsGuessed = 0
         
         // Guess all words
-        while gameState.currentWord != nil {
+        while gameState.wordManager.currentWord != nil {
             gameState.wordGuessed()
             wordsGuessed += 1
         }
         
-        let finalScore = gameState.team1Score
+        let finalScore = gameState.scoreManager.team1Score
         let scoreIncrease = finalScore - initialScore
         
         // Should get 1 point for each word guessed, regardless of duplicates
@@ -158,7 +158,7 @@ final class DuplicateWordBugTests: XCTestCase {
         gameState.beginRound()
         
         // Guess all words in the first round
-        while gameState.currentWord != nil {
+        while gameState.wordManager.currentWord != nil {
             gameState.wordGuessed()
         }
         
@@ -172,7 +172,7 @@ final class DuplicateWordBugTests: XCTestCase {
         XCTAssertEqual(gameState.currentPhase, .playing, "Should be in playing phase for next round")
         
         // All words should be available again for the new round
-        XCTAssertNotNil(gameState.currentWord, "Should have a current word in the new round")
+        XCTAssertNotNil(gameState.wordManager.currentWord, "Should have a current word in the new round")
     }
     
     // MARK: - Bug Test 6: Timer Expiration with Duplicates
@@ -194,7 +194,7 @@ final class DuplicateWordBugTests: XCTestCase {
         // Note: We can't directly call timerExpired as it's private, so we'll test the behavior
         // by checking that the game state is properly set up for timer expiration
         
-        XCTAssertEqual(gameState.currentTeam, 1, "Should start with team 1")
+        XCTAssertEqual(gameState.roundManager.currentTeam, 1, "Should start with team 1")
         XCTAssertTrue(gameState.timerManager.isTimerRunning, "Timer should be running")
         XCTAssertEqual(gameState.timerManager.timerDuration, 1, "Timer duration should be set to 1 second")
     }
@@ -216,13 +216,13 @@ final class DuplicateWordBugTests: XCTestCase {
         
         // Collect several word selections
         for _ in 0..<10 {
-            if let currentWord = gameState.currentWord {
+            if let currentWord = gameState.wordManager.currentWord {
                 selectedWords.append(currentWord.text)
             }
             gameState.wordGuessed()
             
             // Reset for next iteration if no more words
-            if gameState.currentWord == nil {
+            if gameState.wordManager.currentWord == nil {
                 gameState.advanceTeamOrRound()
             }
         }
@@ -252,12 +252,12 @@ final class DuplicateWordBugTests: XCTestCase {
         gameState.resetGame()
         
         // Check that everything is reset properly
-        XCTAssertEqual(gameState.words.count, 0, "Words should be cleared")
-        XCTAssertEqual(gameState.currentPhase, .wordInput, "Should be back to word input phase")
-        XCTAssertEqual(gameState.team1Score, 0, "Team 1 score should be reset")
-        XCTAssertEqual(gameState.team2Score, 0, "Team 2 score should be reset")
-        XCTAssertEqual(gameState.currentTeam, 1, "Should be back to team 1")
-        XCTAssertEqual(gameState.currentRound, .describe, "Should be back to describe round")
+        XCTAssertEqual(gameState.wordManager.words.count, 0, "Words should be cleared")
+        XCTAssertEqual(gameState.currentPhase, .setup, "Should be back to setup phase")
+        XCTAssertEqual(gameState.scoreManager.team1Score, 0, "Team 1 score should be reset")
+        XCTAssertEqual(gameState.scoreManager.team2Score, 0, "Team 2 score should be reset")
+        XCTAssertEqual(gameState.roundManager.currentTeam, 1, "Should be back to team 1")
+        XCTAssertEqual(gameState.roundManager.currentRound, .describe, "Should be back to describe round")
     }
     
     // MARK: - Bug Test 9: Edge Case: All Duplicate Words
@@ -275,12 +275,12 @@ final class DuplicateWordBugTests: XCTestCase {
         gameState.beginRound()
         
         // Should be able to play with all pizza words
-        XCTAssertNotNil(gameState.currentWord, "Should have a current word")
-        XCTAssertEqual(gameState.currentWord?.text, "pizza", "Current word should be pizza")
+        XCTAssertNotNil(gameState.wordManager.currentWord, "Should have a current word")
+        XCTAssertEqual(gameState.wordManager.currentWord?.text, "pizza", "Current word should be pizza")
         
         // Should be able to guess multiple times
         var guessCount = 0
-        while gameState.currentWord != nil && guessCount < 10 {
+        while gameState.wordManager.currentWord != nil && guessCount < 10 {
             gameState.wordGuessed()
             guessCount += 1
         }
@@ -304,8 +304,8 @@ final class DuplicateWordBugTests: XCTestCase {
         var guessedWords: Set<String> = []
         
         // Guess all words
-        while gameState.currentWord != nil {
-            if let currentWord = gameState.currentWord {
+        while gameState.wordManager.currentWord != nil {
+            if let currentWord = gameState.wordManager.currentWord {
                 guessedWords.insert(currentWord.text)
             }
             gameState.wordGuessed()

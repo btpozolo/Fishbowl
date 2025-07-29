@@ -5,6 +5,7 @@ protocol WordManagerProtocol: ObservableObject {
     var words: [Word] { get }
     var currentWord: Word? { get }
     var skipEnabled: Bool { get }
+    var skipAllowed: Bool { get set }
     
     func addWord(_ text: String)
     func getNextWord() -> Word?
@@ -26,6 +27,9 @@ class WordManager: ObservableObject, WordManagerProtocol {
     @Published var words: [Word] = []
     @Published var currentWord: Word? = nil
     @Published var skipEnabled: Bool = false
+    
+    // Separate user setting for whether skip is allowed
+    @Published var skipAllowed: Bool = false
     
     private var unusedWords: [Word] = []
     private var wordStartTime: Date?
@@ -76,7 +80,7 @@ class WordManager: ObservableObject, WordManagerProtocol {
     }
     
     func skipCurrentWord() {
-        guard let current = currentWord, unusedWords.count > 1 else { return }
+        guard let current = currentWord, !unusedWords.isEmpty else { return }
         
         // Record time spent before skipping
         if let startTime = wordStartTime {
@@ -84,14 +88,20 @@ class WordManager: ObservableObject, WordManagerProtocol {
             delegate?.wordManager(self, didSpendTime: max(timeSpent, 1), onWord: current.id)
         }
         
-        // Move word to end and increment skip count
-        if let index = unusedWords.firstIndex(where: { $0.id == current.id }) {
-            let skippedWord = unusedWords.remove(at: index)
-            unusedWords.append(skippedWord)
-            delegate?.wordManager(self, didSkipWord: skippedWord.id)
-            
-            // Get next word
+        // Record the skip
+        delegate?.wordManager(self, didSkipWord: current.id)
+        
+        if unusedWords.count > 1 {
+            // Move current word to end of unused words and get a different word
+            if let index = unusedWords.firstIndex(where: { $0.id == current.id }) {
+                let skippedWord = unusedWords.remove(at: index)
+                unusedWords.append(skippedWord)
+            }
+            // Get next random word (will be different since we moved current to end)
             _ = getNextWord()
+        } else {
+            // Only one word left - just reset timer and keep same word
+            wordStartTime = Date()
         }
     }
     
@@ -120,12 +130,14 @@ class WordManager: ObservableObject, WordManagerProtocol {
         words.removeAll()
         unusedWords.removeAll()
         currentWord = nil
-        skipEnabled = false
+        skipAllowed = false
         wordStartTime = nil
+        updateSkipEnabled()
     }
     
     private func updateSkipEnabled() {
-        skipEnabled = unusedWords.count > 1
+        // Skip is enabled if user allows it AND there are words available
+        skipEnabled = skipAllowed && !unusedWords.isEmpty
     }
     
     func hasUnusedWords() -> Bool {

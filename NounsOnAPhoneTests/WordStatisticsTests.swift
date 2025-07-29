@@ -23,18 +23,19 @@ final class WordStatisticsTests: XCTestCase {
         gameState.addWord("Basketball")
         
         // Simulate some game data
-        let pizzaWord = gameState.words.first { $0.text == "Pizza" }!
-        let elephantWord = gameState.words.first { $0.text == "Elephant" }!
-        let basketballWord = gameState.words.first { $0.text == "Basketball" }!
+        let pizzaWord = gameState.wordManager.words.first { $0.text == "Pizza" }!
+        let elephantWord = gameState.wordManager.words.first { $0.text == "Elephant" }!
+        let basketballWord = gameState.wordManager.words.first { $0.text == "Basketball" }!
         
         // Simulate time spent and skips
-        gameState.timeSpentByWord[pizzaWord.id] = 30 // 30 seconds total
-        gameState.timeSpentByWord[elephantWord.id] = 90 // 90 seconds total
-        gameState.timeSpentByWord[basketballWord.id] = 45 // 45 seconds total
+        gameState.analyticsManager.recordWordTime(wordId: pizzaWord.id, timeSpent: 30) // 30 seconds total
+        gameState.analyticsManager.recordWordTime(wordId: elephantWord.id, timeSpent: 90) // 90 seconds total
+        gameState.analyticsManager.recordWordTime(wordId: basketballWord.id, timeSpent: 45) // 45 seconds total
         
-        gameState.skipsByWord[pizzaWord.id] = 0 // No skips
-        gameState.skipsByWord[elephantWord.id] = 2 // 2 skips
-        gameState.skipsByWord[basketballWord.id] = 1 // 1 skip
+        // Skip data: Pizza = 0 skips (no calls), Elephant = 2 skips, Basketball = 1 skip
+        gameState.analyticsManager.recordWordSkip(wordId: elephantWord.id)
+        gameState.analyticsManager.recordWordSkip(wordId: elephantWord.id)
+        gameState.analyticsManager.recordWordSkip(wordId: basketballWord.id)
         
         // Get statistics
         let stats = gameState.getWordStatistics()
@@ -65,22 +66,16 @@ final class WordStatisticsTests: XCTestCase {
         
         let stats = gameState.getWordStatistics()
         
-        // Should still have stats with zero values
-        XCTAssertEqual(stats.count, 2, "Should have 2 word statistics")
-        
-        for stat in stats {
-            XCTAssertEqual(stat.skips, 0, "Should have 0 skips")
-            XCTAssertEqual(stat.averageTime, 0.0, "Should have 0 average time")
-            XCTAssertEqual(stat.totalTime, 0, "Should have 0 total time")
-        }
+        // Should have no stats since no words have been played (no time or skips recorded)
+        XCTAssertEqual(stats.count, 0, "Should have 0 word statistics when no game data exists")
     }
     
     func testWordStatisticsReset() {
         // Add words and simulate some data
         gameState.addWord("Pizza")
-        let pizzaWord = gameState.words.first { $0.text == "Pizza" }!
-        gameState.timeSpentByWord[pizzaWord.id] = 30
-        gameState.skipsByWord[pizzaWord.id] = 1
+        let pizzaWord = gameState.wordManager.words.first { $0.text == "Pizza" }!
+        gameState.analyticsManager.recordWordTime(wordId: pizzaWord.id, timeSpent: 30)
+        gameState.analyticsManager.recordWordSkip(wordId: pizzaWord.id)
         
         // Verify data exists
         XCTAssertEqual(gameState.getWordStatistics().count, 1, "Should have 1 stat before reset")
@@ -90,8 +85,8 @@ final class WordStatisticsTests: XCTestCase {
         
         // Verify data is cleared
         XCTAssertEqual(gameState.getWordStatistics().count, 0, "Should have 0 stats after reset")
-        XCTAssertTrue(gameState.timeSpentByWord.isEmpty, "Time data should be cleared")
-        XCTAssertTrue(gameState.skipsByWord.isEmpty, "Skip data should be cleared")
+        XCTAssertTrue(gameState.analyticsManager.timeSpentByWord.isEmpty, "Time data should be cleared")
+        XCTAssertTrue(gameState.analyticsManager.skipsByWord.isEmpty, "Skip data should be cleared")
     }
     
     func testWordStatisticsWithPartialData() {
@@ -99,12 +94,13 @@ final class WordStatisticsTests: XCTestCase {
         gameState.addWord("Pizza")
         gameState.addWord("Elephant")
         
-        let pizzaWord = gameState.words.first { $0.text == "Pizza" }!
-        let elephantWord = gameState.words.first { $0.text == "Elephant" }!
+        let pizzaWord = gameState.wordManager.words.first { $0.text == "Pizza" }!
+        let elephantWord = gameState.wordManager.words.first { $0.text == "Elephant" }!
         
-        // Only add time data for one word
-        gameState.timeSpentByWord[pizzaWord.id] = 60
-        gameState.skipsByWord[elephantWord.id] = 2
+        // Only add time data for one word and skip data for the other
+        gameState.analyticsManager.recordWordTime(wordId: pizzaWord.id, timeSpent: 60)
+        gameState.analyticsManager.recordWordSkip(wordId: elephantWord.id)
+        gameState.analyticsManager.recordWordSkip(wordId: elephantWord.id)
         
         let stats = gameState.getWordStatistics()
         

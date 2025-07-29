@@ -24,7 +24,7 @@ struct GamePlayView: View {
                         .padding(.top, 20)
                         
                         // Middle: Word card
-                        if let currentWord = gameState.wordManager.currentWord {
+                        if let currentWord = gameState.currentWord {
                             Text(currentWord.text)
                                 .font(.system(size: 72, weight: .bold, design: .rounded))
                                 .foregroundColor(.primary)
@@ -45,32 +45,32 @@ struct GamePlayView: View {
                                         )
                                 )
                                 .scaleEffect(1.0)
-                                .animation(.spring(response: 0.6, dampingFraction: 0.8), value: currentWord.text)
+                                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: currentWord.text)
                         }
                         
                         // Bottom: Correct/Skip buttons
-                        if gameState.wordManager.skipEnabled {
+                        if gameState.skipEnabled {
                             HStack(spacing: 16) {
                                 GameButton.skip(
                                     size: .large,
                                     action: {
-                                        withAnimation(.spring(response: 0.4)) {
+                                        withAnimation(.spring(response: 0.15)) {
                                             gameState.skipCurrentWord()
                                         }
                                     }
                                 )
-                                .disabled(gameState.wordManager.currentWord == nil || gameState.wordManager.words.count <= 1)
+                                .disabled(gameState.currentWord == nil || gameState.wordCount <= 1)
 
                                 GameButton.success(
                                     title: "Correct!",
                                     icon: "checkmark.circle.fill",
                                     size: .large
                                 ) {
-                                    withAnimation(.spring(response: 0.4)) {
+                                    withAnimation(.spring(response: 0.15)) {
                                         gameState.wordGuessed()
                                     }
                                 }
-                                .disabled(gameState.wordManager.currentWord == nil)
+                                .disabled(gameState.currentWord == nil)
                             }
                             .padding(.bottom, 20)
                         } else {
@@ -79,7 +79,7 @@ struct GamePlayView: View {
                                 icon: "checkmark.circle.fill",
                                 size: .large
                             ) {
-                                withAnimation(.spring(response: 0.4)) {
+                                withAnimation(.spring(response: 0.15)) {
                                     gameState.wordGuessed()
                                 }
                             }
@@ -113,7 +113,7 @@ struct GamePlayView: View {
                                             .stroke(timerColor.opacity(0.3), lineWidth: 1)
                                     )
                             )
-                            ProgressView(value: Double(gameState.timerManager.timeRemaining), total: Double(gameState.timerManager.timerDuration))
+                            ProgressView(value: Double(gameState.timeRemaining), total: Double(gameState.timerDuration))
                                 .progressViewStyle(LinearProgressViewStyle(tint: timerColor))
                                 .scaleEffect(x: 1, y: 1.5, anchor: .center)
                         }
@@ -168,7 +168,7 @@ struct GamePlayView: View {
                                                 .stroke(timerColor.opacity(0.3), lineWidth: 1)
                                         )
                                 )
-                                ProgressView(value: Double(gameState.timerManager.timeRemaining), total: Double(gameState.timerManager.timerDuration))
+                                ProgressView(value: Double(gameState.timeRemaining), total: Double(gameState.timerDuration))
                                     .progressViewStyle(LinearProgressViewStyle(tint: timerColor))
                                     .scaleEffect(x: 1, y: 2, anchor: .center)
                             }
@@ -178,7 +178,7 @@ struct GamePlayView: View {
                     .padding(.top, 20)
                     Spacer()
                     // Current word display with enhanced design
-                    if let currentWord = gameState.wordManager.currentWord {
+                    if let currentWord = gameState.currentWord {
                         VStack(spacing: 8) {
                             Text("Current Word")
                                 .font(.headline)
@@ -205,30 +205,30 @@ struct GamePlayView: View {
                                         )
                                 )
                                 .scaleEffect(1.0)
-                                .animation(.spring(response: 0.6, dampingFraction: 0.8), value: currentWord.text)
+                                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: currentWord.text)
                         }
                         .padding(.horizontal, 20)
                     }
                     Spacer()
                     // Skip/Correct buttons
-                    if gameState.wordManager.skipEnabled {
+                    if gameState.skipEnabled {
                         VStack(spacing: 16) {
                             GameButton.skip(
                                 size: .large,
                                 action: {
-                                    withAnimation(.spring(response: 0.4)) {
+                                    withAnimation(.spring(response: 0.15)) {
                                         gameState.skipCurrentWord()
                                     }
                                 }
                             )
-                            .disabled(gameState.wordManager.currentWord == nil || gameState.wordManager.words.count <= 1)
+                            .disabled(gameState.currentWord == nil || gameState.wordCount <= 1)
 
                             GameButton.success(
                                 title: "Correct!",
                                 icon: "checkmark.circle.fill",
                                 size: .large
                             ) {
-                                withAnimation(.spring(response: 0.4)) {
+                                withAnimation(.spring(response: 0.15)) {
                                     gameState.wordGuessed()
                                 }
                             }
@@ -241,7 +241,7 @@ struct GamePlayView: View {
                             icon: "checkmark.circle.fill",
                             size: .large
                         ) {
-                            withAnimation(.spring(response: 0.4)) {
+                            withAnimation(.spring(response: 0.15)) {
                                 gameState.wordGuessed()
                             }
                         }
@@ -278,14 +278,14 @@ struct GamePlayView: View {
     }
     
     private var timeString: String {
-        let minutes = gameState.timerManager.timeRemaining / 60
-        let seconds = gameState.timerManager.timeRemaining % 60
+        let minutes = gameState.timeRemaining / 60
+        let seconds = gameState.timeRemaining % 60
         return String(format: "%d:%02d", minutes, seconds)
     }
     
     private var timerColor: Color {
-        let totalTime = gameState.timerManager.timerDuration
-        let remainingTime = gameState.timerManager.timeRemaining
+        let totalTime = gameState.timerDuration
+        let remainingTime = gameState.timeRemaining
         let percentage = Double(remainingTime) / Double(totalTime)
         
         if percentage <= 0.17 { // Last 17% of time
@@ -298,8 +298,8 @@ struct GamePlayView: View {
     }
     
     private var timerBackgroundColor: Color {
-        let totalTime = gameState.timerManager.timerDuration
-        let remainingTime = gameState.timerManager.timeRemaining
+        let totalTime = gameState.timerDuration
+        let remainingTime = gameState.timeRemaining
         let percentage = Double(remainingTime) / Double(totalTime)
         
         if percentage <= 0.17 {
