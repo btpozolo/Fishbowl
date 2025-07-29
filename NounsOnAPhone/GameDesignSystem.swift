@@ -315,23 +315,23 @@ extension View {
 #Preview {
     VStack(spacing: 20) {
         GameButton.primary(title: "Start Game", icon: "play.circle.fill", size: .large) {
-            print("Primary button tapped")
+            // Primary button action
         }
         
         GameButton.success(title: "Correct!", icon: "checkmark.circle.fill") {
-            print("Success button tapped")
+            // Success button action
         }
         
         GameButton.secondary(title: "Add Sample Words", icon: "wand.and.stars") {
-            print("Secondary button tapped")
+            // Secondary button action
         }
         
         GameButton.danger(title: "Reset Game", icon: "trash") {
-            print("Danger button tapped")
+            // Danger button action
         }
         
         GameButton.disabled(title: "Disabled Button", icon: "lock") {
-            print("Disabled button tapped")
+            // Disabled button action
         }
     }
     .padding()
