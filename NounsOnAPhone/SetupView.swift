@@ -107,7 +107,7 @@ struct SetupView: View {
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Toggle("", isOn: $gameState.skipEnabled)
+                                        Toggle("", isOn: $gameState.wordManager.skipEnabled)
                     .toggleStyle(SwitchToggleStyle(tint: Color(red: 0.22, green: 0.60, blue: 0.98)))
             }
             

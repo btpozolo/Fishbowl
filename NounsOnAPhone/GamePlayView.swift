@@ -24,7 +24,7 @@ struct GamePlayView: View {
                         .padding(.top, 20)
                         
                         // Middle: Word card
-                        if let currentWord = gameState.currentWord {
+                        if let currentWord = gameState.wordManager.currentWord {
                             Text(currentWord.text)
                                 .font(.system(size: 72, weight: .bold, design: .rounded))
                                 .foregroundColor(.primary)
@@ -49,7 +49,7 @@ struct GamePlayView: View {
                         }
                         
                         // Bottom: Correct/Skip buttons
-                        if gameState.skipEnabled {
+                        if gameState.wordManager.skipEnabled {
                             HStack(spacing: 16) {
                                 GameButton.skip(
                                     size: .large,
@@ -59,7 +59,7 @@ struct GamePlayView: View {
                                         }
                                     }
                                 )
-                                .disabled(gameState.currentWord == nil || gameState.words.count <= 1)
+                                .disabled(gameState.wordManager.currentWord == nil || gameState.wordManager.words.count <= 1)
 
                                 GameButton.success(
                                     title: "Correct!",
@@ -70,7 +70,7 @@ struct GamePlayView: View {
                                         gameState.wordGuessed()
                                     }
                                 }
-                                .disabled(gameState.currentWord == nil)
+                                .disabled(gameState.wordManager.currentWord == nil)
                             }
                             .padding(.bottom, 20)
                         } else {
@@ -178,7 +178,7 @@ struct GamePlayView: View {
                     .padding(.top, 20)
                     Spacer()
                     // Current word display with enhanced design
-                    if let currentWord = gameState.currentWord {
+                    if let currentWord = gameState.wordManager.currentWord {
                         VStack(spacing: 8) {
                             Text("Current Word")
                                 .font(.headline)
@@ -211,7 +211,7 @@ struct GamePlayView: View {
                     }
                     Spacer()
                     // Skip/Correct buttons
-                    if gameState.skipEnabled {
+                    if gameState.wordManager.skipEnabled {
                         VStack(spacing: 16) {
                             GameButton.skip(
                                 size: .large,
@@ -221,7 +221,7 @@ struct GamePlayView: View {
                                     }
                                 }
                             )
-                            .disabled(gameState.currentWord == nil || gameState.words.count <= 1)
+                            .disabled(gameState.wordManager.currentWord == nil || gameState.wordManager.words.count <= 1)
 
                             GameButton.success(
                                 title: "Correct!",
@@ -356,14 +356,14 @@ struct ScoreDisplay: View {
     sampleGameState.addWord("Basketball")
     sampleGameState.addWord("Sunshine")
     sampleGameState.addWord("Mountain")
-    sampleGameState.currentWord = Word(text: "Pizza")
+    sampleGameState.wordManager.currentWord = Word(text: "Pizza")
     sampleGameState.currentPhase = .playing
     sampleGameState.timerManager.timeRemaining = 45
     sampleGameState.timerManager.updateTimerDuration(60)
     sampleGameState.scoreManager.team1Score = 3
     sampleGameState.scoreManager.team2Score = 2
     sampleGameState.roundManager.currentTeam = 1
-    sampleGameState.skipEnabled = true
+    sampleGameState.wordManager.skipEnabled = true
     
     return GamePlayView(gameState: sampleGameState)
 }
@@ -375,14 +375,14 @@ struct ScoreDisplay: View {
     sampleGameState.addWord("Basketball")
     sampleGameState.addWord("Sunshine")
     sampleGameState.addWord("Mountain")
-    sampleGameState.currentWord = Word(text: "Pizza")
+    sampleGameState.wordManager.currentWord = Word(text: "Pizza")
     sampleGameState.currentPhase = .playing
     sampleGameState.timerManager.timeRemaining = 45
     sampleGameState.timerManager.updateTimerDuration(60)
     sampleGameState.scoreManager.team1Score = 3
     sampleGameState.scoreManager.team2Score = 2
     sampleGameState.roundManager.currentTeam = 1
-    sampleGameState.skipEnabled = true
+    sampleGameState.wordManager.skipEnabled = true
     
     return GamePlayView(gameState: sampleGameState)
 }

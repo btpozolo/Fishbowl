@@ -56,8 +56,8 @@ struct WordInputView: View {
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                         
-                        if gameState.words.count > 0 {
-                            Text("Words added: \(gameState.words.count)")
+                                        if gameState.wordManager.words.count > 0 {
+                    Text("Words added: \(gameState.wordManager.words.count)")
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.8))
                         }

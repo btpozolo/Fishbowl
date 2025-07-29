@@ -38,7 +38,7 @@ struct GameOverviewView: View {
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                         
-                        Text("\(gameState.words.count) words ready to play!")
+                        Text("\(gameState.wordManager.words.count) words ready to play!")
                             .font(.subheadline)
                             .foregroundColor(.white.opacity(0.8))
                             .multilineTextAlignment(.center)

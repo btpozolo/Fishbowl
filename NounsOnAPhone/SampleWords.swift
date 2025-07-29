@@ -23,7 +23,7 @@ extension GameState {
             "turtle", "unicorn", "vacuum", "vampire", "volcano", "waffle", "wagon", "walrus", "werewolf", "whale",
             "wig", "windmill", "wizard", "xylophone", "yeti", "yo-yo", "zebra", "zeppelin", "zombie"
         ]
-        let existing = Set(words.map { $0.text.lowercased() })
+        let existing = Set(wordManager.words.map { $0.text.lowercased() })
         let available = allSampleWords.filter { !existing.contains($0.lowercased()) }
         let shuffled = available.shuffled()
         let selected = Array(shuffled.prefix(count))
